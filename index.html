@@ -27,8 +27,21 @@ header {
   color: #f5c542;
 }
 .live {
-  color: #ff3939;
-  font-weight: bold;
+    color: #ff3939;
+    font-weight: bold;
+    animation: liveBreathing 2s ease-in-out infinite;
+}
+
+@keyframes liveBreathing {
+    0%, 100% {
+        opacity: 0.4;
+        text-shadow: 0 0 2px #ff3939;
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 12px #ff3939,
+                     0 0 22px #ff3939;
+    }
 }
 main {
   max-width: 1200px;
