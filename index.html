@@ -141,7 +141,40 @@ header .logo img {
     object-fit: contain;
     display: block;
 }
+/* HEADER WEATHER DISPLAY */
+.header-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex: 1;
+    margin-left: 30px;
+}
 
+#header-weather-card {
+    flex: 1;
+    min-width: 0;
+    max-width: 600px;
+    background: #26364d;
+    border-radius: 18px;
+    padding: 12px 20px;
+    text-align: center;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+#live-clock {
+    color: #00df88;
+    font-size: 30px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#live-date {
+    font-size: 14px;
+    white-space: nowrap;
+}
 @media (max-width: 600px) {
     header .logo img {
         width: 130px;
@@ -295,7 +328,7 @@ header .logo img {
     <img src="nila-tv-logo.png" alt="NILA TV">
   </div>
 <div class="header-info">
-    <div id="header-weather">🌤️ தமிழ்நாடு வானிலை</div>
+<div id="header-weather-card">வானிலை தகவல் ஏற்றப்படுகிறது...</div>
     <div id="live-clock">--:--:--</div>
     <div id="live-date">தேதி</div>
 </div>
@@ -473,6 +506,41 @@ async function loadWeather() {
 
     grid.appendChild(card);
   });
+
+const headerCard = document.getElementById("header-weather-card");
+
+const headerWeatherList = results
+    .filter(result => result.status === "fulfilled")
+    .map(result => result.value);
+
+let headerWeatherIndex = 0;
+
+function showHeaderWeather() {
+    if (!headerWeatherList.length) return;
+
+    const item = headerWeatherList[headerWeatherIndex];
+    const weather = item.weather;
+
+    headerCard.innerHTML = `
+        <div style="font-size:20px;font-weight:bold;color:#ffcc33;">
+            ${item.name} 
+            <span style="color:white;">${Math.round(weather.temperature_2m)}°C</span>
+        </div>
+        <div style="font-size:13px;color:white;margin-top:5px;">
+            ஈரப்பதம்: ${weather.relative_humidity_2m}%
+            | காற்று: ${weather.wind_speed_10m} km/h
+            | மழை: ${weather.precipitation} mm
+        </div>
+    `;
+
+    headerWeatherIndex =
+        (headerWeatherIndex + 1) % headerWeatherList.length;
+}
+
+showHeaderWeather();
+
+clearInterval(window.headerWeatherTimer);
+window.headerWeatherTimer = setInterval(showHeaderWeather, 5000);
 
   if (!grid.children.length) {
     grid.innerHTML = "<p>வானிலை தகவலைப் பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.</p>";
