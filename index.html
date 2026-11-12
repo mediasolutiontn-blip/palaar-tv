@@ -95,6 +95,30 @@ footer {
     <p>Watch PALAAR TV Live Anytime, Anywhere.</p>
     <p class="live">● We Are Live</p>
   </div>
+<div class="channel-list">
+
+  <button onclick="changeChannel('palaartv')">
+    <img src="palaartv-logo.png">
+    <span>PALAAR TV</span>
+  </button>
+
+  <button onclick="changeChannel('nilatv')">
+    <img src="nila-tv-logo.png">
+    <span>NILA TV</span>
+  </button>
+
+</div>
+
+<script>
+function changeChannel(channel) {
+  const urls = {
+    palaartv: "https://livetv.ipcloud.live/channels/palaartv/palaartv.php",
+    nilatv: "https://livetv.ipcloud.live/channels/palaartv/nilatv.php"
+  };
+
+  document.querySelector(".player iframe").src = urls[channel];
+}
+</script>
 </main>
 
 <footer>
