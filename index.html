@@ -37,9 +37,9 @@ header {
     font-weight: bold;
 }
 
-.ticker .tv-name { color: #ffcc33; }
-.ticker .event-name { color: #00e676; }
-.ticker .contact { color: #ff4444; }
+.ticker span {
+    color: #ffcc33;
+}
 
 @keyframes tickerMove {
     from { transform: translateX(0); }
@@ -141,7 +141,40 @@ header .logo img {
     object-fit: contain;
     display: block;
 }
+/* HEADER WEATHER DISPLAY */
+.header-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex: 1;
+    margin-left: 30px;
+}
 
+#header-weather-card {
+    flex: 1;
+    min-width: 0;
+    max-width: 600px;
+    background: #26364d;
+    border-radius: 18px;
+    padding: 12px 20px;
+    text-align: center;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+#live-clock {
+    color: #00df88;
+    font-size: 30px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#live-date {
+    font-size: 14px;
+    white-space: nowrap;
+}
 @media (max-width: 600px) {
     header .logo img {
         width: 130px;
@@ -171,6 +204,227 @@ header .logo img {
         font-size: 13px;
     }
 }
+  .banner-slider {
+    width: 100%;
+    max-width: 1200px;
+    aspect-ratio: 16 / 5;
+    margin: 25px auto;
+    overflow: hidden;
+    border-radius: 12px;
+    position: relative;
+}
+
+.banner-slides {
+    display: flex;
+    width: 400%;
+    height: 100%;
+    animation: bannerSlide 20s infinite;
+}
+
+.banner-slides img {
+    width: 25%;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+@keyframes bannerSlide {
+    0%, 20% { transform: translateX(0); }
+    25%, 45% { transform: translateX(-25%); }
+    50%, 70% { transform: translateX(-50%); }
+    75%, 95% { transform: translateX(-75%); }
+    100% { transform: translateX(0); }
+}
+
+@media (max-width: 600px) {
+    .banner-slider {
+        width: 100%;
+        aspect-ratio: 16 / 5;
+        border-radius: 6px;
+    }
+}
+.channel-list button {
+    transition: all 0.3s ease;
+}
+
+.channel-list button.active {
+    border: 2px solid #ff3030;
+    background: #4a1010;
+    box-shadow: 0 0 10px #ff3030,
+                0 0 22px #ff3030;
+}/* TAMIL NADU WEATHER DESIGN */
+.weather-section {
+    width: 95%;
+    max-width: 1200px;
+    margin: 25px auto;
+    padding: 20px;
+    background: #151e2e;
+    border: 1px solid #34445e;
+    border-radius: 12px;
+    color: white;
+    box-sizing: border-box;
+}
+
+.weather-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.weather-header h2 {
+    color: #ffcc33;
+    font-size: 24px;
+    margin: 5px;
+}
+
+#live-clock {
+    font-size: 32px;
+    font-weight: bold;
+    color: #00e676;
+}
+
+#live-date {
+    color: #cccccc;
+    font-size: 14px;
+}
+
+.weather-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.weather-card {
+    background: #25344a;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.weather-card h3 {
+    color: #ffcc33;
+    margin: 5px;
+}
+
+.weather-card p {
+    margin: 5px;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .weather-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .weather-header h2 {
+        font-size: 19px;
+    }
+}
+.weather-section {
+    display: none !important;
+}
+@media (max-width: 600px) {
+    header {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 10px;
+    }
+
+    header .logo {
+        width: 100%;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    header .logo img {
+        width: 120px;
+        height: 65px;
+    }
+
+    .header-info {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #header-weather-card {
+        width: 100%;
+        max-width: 100%;
+        flex: none;
+    }
+
+    #live-clock {
+        font-size: 24px;
+    }
+
+    #live-date {
+        font-size: 12px;
+        text-align: center;
+    }
+}
+/* MOBILE BRAND ROW */
+.mobile-brand-row {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .desktop-brand-title,
+    .desktop-brand-subtitle {
+        display: none !important;
+   }
+    }
+.mobile-brand-row {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    .mobile-brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        width: 100%;
+        margin: 14px 0 18px;
+        padding: 0 4px;
+    }
+.mobile-brand-row button {
+        flex: 0 0 24%;
+        min-width: 0;
+        height: 95px;
+        padding: 5px;
+        background: #172238;
+        border: 1px solid #34445e;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-brand-row button img {
+        width: 100%;
+        height: 75px;
+        object-fit: contain;
+    }
+
+    .mobile-brand-text {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+
+    .mobile-brand-text h1 {
+        font-size: 18px;
+        margin: 0 0 7px;
+    }
+
+    .mobile-brand-text p {
+        font-size: 12px;
+        line-height: 1.4;
+        margin: 0;
+    }
+}
 </style>
 </head>
 <body>
@@ -180,23 +434,49 @@ header .logo img {
     <img src="palaartv-logo.png" alt="PALAAR TV">
     <img src="nila-tv-logo.png" alt="NILA TV">
   </div>
-  <div class="live">● LIVE NOW</div>
+<div class="header-info">
+<div id="header-weather-card">வானிலை தகவல் ஏற்றப்படுகிறது...</div>
+    <div id="live-clock">--:--:--</div>
+    <div id="live-date">தேதி</div>
+</div>
 </header>
 <div class="ticker">
     <div class="ticker-text">
-        <span class="tv-name">📺 PALAAR TV – நேரலை ஒளிபரப்பு</span>
+        <span class="tv-name"> PALAAR TV – நேரலை ஒளிபரப்பு</span>
         &nbsp; | &nbsp;
-        <span class="tv-name">📡 NILA TV – நேரலை ஒளிபரப்பு</span>
+        <span class="tv-name"> NILA TV – நேரலை ஒளிபரப்பு</span>
         &nbsp; | &nbsp;
-        <span class="event-name">🎥 அனைத்து நிகழ்ச்சிகளுக்கும் EVENT LIVE ஒளிபரப்பு வசதி</span>
+        <span class="event-name"> ZOOM MEETING LIVE, YOUTUBE LIVE, RTMP LIVE </span>
         &nbsp; | &nbsp;
-        <span class="contact">📢 விளம்பரத் தொடர்புக்கு: 900 360 430 1</span>
+        <span class="contact"> விளம்பரத் தொடர்புக்கு: 900 360 430 1</span>
     </div>
 </div>
 <main>
-<h1>PALAAR GROUP</h1>
-<p>Professional Media & Broadcasting Services</p>
+<div class="weather-section">
+    <div class="weather-header">
+        <h2>🌦️ TAMIL NADU LIVE WEATHER</h2>
+     
+    </div>
 
+    <div class="weather-grid" id="weather-grid">
+        <p>Loading Tamil Nadu Weather...</p>
+    </div>
+<h1 class="desktop-brand-title">PALAAR GROUP</h1>
+<p class="desktop-brand-subtitle">Professional Media & Broadcasting Services</p>
+<div class="mobile-brand-row">
+    <button onclick="changeChannel('palaartv')">
+        <img src="palaartv-logo.png" alt="PALAAR TV">
+    </button>
+
+    <div class="mobile-brand-text">
+        <h1>PALAAR GROUP</h1>
+        <p>Professional Media<br>& Broadcasting Services</p>
+    </div>
+
+    <button onclick="changeChannel('nilatv')">
+        <img src="nila-tv-logo.png" alt="NILA TV">
+    </button>
+</div>
   <div class="player">
     <iframe
       src="https://livetv.ipcloud.live/channels/palaartv/palaartv.php"
@@ -205,11 +485,14 @@ header .logo img {
     </iframe>
   </div>
 
-  <div class="info">
-    <h2>📺 PALAAR TV</h2>
-    <p>Watch PALAAR TV Live Anytime, Anywhere.</p>
-    <p class="live">● We Are Live</p>
-  </div>
+  <div class="banner-slider">
+    <div class="banner-slides">
+<img src="01.jpg" alt="RailWire Internet">
+<img src="02.jpg" alt="TIC Fiber">
+<img src="03.jpg" alt="Airtel Xstream">
+<img src="04.jpg" alt="BSNL Fiber">
+    </div>
+</div>
 <div class="channel-list">
 
   <button onclick="changeChannel('palaartv')">
@@ -232,13 +515,163 @@ function changeChannel(channel) {
   };
 
   document.querySelector(".player iframe").src = urls[channel];
-}
-</script>
+document.querySelectorAll(".channel-list button")
+.forEach(btn => btn.classList.remove("active"));
+
+document.querySelector(
+    `.channel-list button[onclick="changeChannel('${channel}')"]`
+).classList.add("active");}
+changeChannel('palaartv');</script>
 </main>
 
 <footer>
   © 2026 MEDIA SOLUTION | All Rights Reserved
 </footer>
+
+<script>
+const districts = [
+["சென்னை",13.0827,80.2707],
+["திருவள்ளூர்",13.1439,79.9094],
+["காஞ்சிபுரம்",12.8342,79.7036],
+["செங்கல்பட்டு",12.6819,79.9888],
+["வேலூர்",12.9165,79.1325],
+["ராணிப்பேட்டை",12.9273,79.3333],
+["திருப்பத்தூர்",12.4950,78.5678],
+["திருவண்ணாமலை",12.2253,79.0747],
+["விழுப்புரம்",11.9401,79.4861],
+["கள்ளக்குறிச்சி",11.7380,78.9639],
+["கடலூர்",11.7480,79.7714],
+["மயிலாடுதுறை",11.1035,79.6550],
+["நாகப்பட்டினம்",10.7672,79.8449],
+["திருவாரூர்",10.7661,79.6368],
+["தஞ்சாவூர்",10.7870,79.1378],
+["அரியலூர்",11.1401,79.0786],
+["பெரம்பலூர்",11.2320,78.8801],
+["திருச்சி",10.7905,78.7047],
+["கரூர்",10.9601,78.0766],
+["திண்டுக்கல்",10.3673,77.9803],
+["மதுரை",9.9252,78.1198],
+["தேனி",10.0104,77.4977],
+["விருதுநகர்",9.5680,77.9624],
+["சிவகங்கை",9.8433,78.4809],
+["ராமநாதபுரம்",9.3639,78.8395],
+["தூத்துக்குடி",8.7642,78.1348],
+["திருநெல்வேலி",8.7139,77.7567],
+["தென்காசி",8.9590,77.3152],
+["கன்னியாகுமரி",8.0883,77.5385],
+["கோயம்புத்தூர்",11.0168,76.9558],
+["திருப்பூர்",11.1085,77.3411],
+["ஈரோடு",11.3410,77.7172],
+["சேலம்",11.6643,78.1460],
+["நாமக்கல்",11.2189,78.1677],
+["தர்மபுரி",12.1277,78.1579],
+["கிருஷ்ணகிரி",12.5186,78.2137],
+["நீலகிரி",11.4102,76.6950],
+["திண்டுக்கல்",10.3673,77.9803]
+];
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById("live-clock").textContent =
+    now.toLocaleTimeString("ta-IN");
+  document.getElementById("live-date").textContent =
+    now.toLocaleDateString("ta-IN", {
+      weekday:"long", year:"numeric",
+      month:"long", day:"numeric"
+    });
+}
+
+async function loadWeather() {
+  const grid = document.getElementById("weather-grid");
+  grid.innerHTML = "<p>வானிலை தகவல்கள் பதிவிறக்கம் ஆகின்றன...</p>";
+
+  const results = await Promise.allSettled(
+    districts.map(async ([name, lat, lon]) => {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&timezone=Asia%2FKolkata`;
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Weather unavailable");
+      const data = await response.json();
+      return {name, weather:data.current};
+    })
+  );
+
+  const icons = {
+    0:"☀️", 1:"🌤️", 2:"⛅", 3:"☁️",
+    45:"🌫️", 48:"🌫️", 51:"🌦️", 53:"🌦️",
+    55:"🌧️", 61:"🌧️", 63:"🌧️", 65:"🌧️",
+    71:"🌨️", 80:"🌦️", 81:"🌧️", 82:"⛈️",
+    95:"⛈️", 96:"⛈️", 99:"⛈️"
+  };
+
+  grid.innerHTML = "";
+
+  results.forEach((result) => {
+    if (result.status !== "fulfilled") return;
+
+    const {name, weather} = result.value;
+    const card = document.createElement("div");
+    card.className = "weather-card";
+
+    const icon = icons[weather.weather_code] || "🌡️";
+
+    card.innerHTML = `
+      <h3>${icon} ${name}</h3>
+      <h2>${Math.round(weather.temperature_2m)}°C</h2>
+      <p>உணரப்படும் வெப்பம்: ${weather.apparent_temperature}°C</p>
+      <p>ஈரப்பதம்: ${weather.relative_humidity_2m}%</p>
+      <p>காற்றின் வேகம்: ${weather.wind_speed_10m} km/h</p>
+      <p>மழைப்பொழிவு: ${weather.precipitation} mm</p>
+    `;
+
+    grid.appendChild(card);
+  });
+
+const headerCard = document.getElementById("header-weather-card");
+
+const headerWeatherList = results
+    .filter(result => result.status === "fulfilled")
+    .map(result => result.value);
+
+let headerWeatherIndex = 0;
+
+function showHeaderWeather() {
+    if (!headerWeatherList.length) return;
+
+    const item = headerWeatherList[headerWeatherIndex];
+    const weather = item.weather;
+
+    headerCard.innerHTML = `
+        <div style="font-size:20px;font-weight:bold;color:#ffcc33;">
+            ${item.name} 
+            <span style="color:white;">${Math.round(weather.temperature_2m)}°C</span>
+        </div>
+        <div style="font-size:13px;color:white;margin-top:5px;">
+            ஈரப்பதம்: ${weather.relative_humidity_2m}%
+            | காற்று: ${weather.wind_speed_10m} km/h
+            | மழை: ${weather.precipitation} mm
+        </div>
+    `;
+
+    headerWeatherIndex =
+        (headerWeatherIndex + 1) % headerWeatherList.length;
+}
+
+showHeaderWeather();
+
+clearInterval(window.headerWeatherTimer);
+window.headerWeatherTimer = setInterval(showHeaderWeather, 5000);
+
+  if (!grid.children.length) {
+    grid.innerHTML = "<p>வானிலை தகவலைப் பெற முடியவில்லை. மீண்டும் முயற்சிக்கவும்.</p>";
+  }
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+loadWeather();
+setInterval(loadWeather, 15 * 60 * 1000);
+</script>
 
 </body>
 </html>
