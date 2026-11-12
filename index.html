@@ -210,7 +210,16 @@ header .logo img {
         border-radius: 6px;
     }
 }
-</style>
+.channel-list button {
+    transition: all 0.3s ease;
+}
+
+.channel-list button.active {
+    border: 2px solid #ff3030;
+    background: #4a1010;
+    box-shadow: 0 0 10px #ff3030,
+                0 0 22px #ff3030;
+}</style>
 </head>
 <body>
 
@@ -274,8 +283,13 @@ function changeChannel(channel) {
   };
 
   document.querySelector(".player iframe").src = urls[channel];
-}
-</script>
+document.querySelectorAll(".channel-list button")
+.forEach(btn => btn.classList.remove("active"));
+
+document.querySelector(
+    `.channel-list button[onclick="changeChannel('${channel}')"]`
+).classList.add("active");}
+changeChannel('palaartv');</script>
 </main>
 
 <footer>
