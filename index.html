@@ -364,67 +364,6 @@ header .logo img {
         text-align: center;
     }
 }
-/* MOBILE BRAND ROW */
-.mobile-brand-row {
-    display: none;
-}
-
-@media (max-width: 600px) {
-    .desktop-brand-title,
-    .desktop-brand-subtitle {
-        display: none !important;
-   }
-    }
-.mobile-brand-row {
-    display: none;
-}
-
-@media (max-width: 600px) {
-    .mobile-brand-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        width: 100%;
-        margin: 14px 0 18px;
-        padding: 0 4px;
-    }
-.mobile-brand-row button {
-        flex: 0 0 24%;
-        min-width: 0;
-        height: 95px;
-        padding: 5px;
-        background: #172238;
-        border: 1px solid #34445e;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .mobile-brand-row button img {
-        width: 100%;
-        height: 75px;
-        object-fit: contain;
-    }
-
-    .mobile-brand-text {
-        flex: 1;
-        min-width: 0;
-        text-align: center;
-    }
-
-    .mobile-brand-text h1 {
-        font-size: 18px;
-        margin: 0 0 7px;
-    }
-
-    .mobile-brand-text p {
-        font-size: 12px;
-        line-height: 1.4;
-        margin: 0;
-    }
-}
 </style>
 </head>
 <body>
@@ -461,22 +400,9 @@ header .logo img {
     <div class="weather-grid" id="weather-grid">
         <p>Loading Tamil Nadu Weather...</p>
     </div>
-<h1 class="desktop-brand-title">PALAAR GROUP</h1>
-<p class="desktop-brand-subtitle">Professional Media & Broadcasting Services</p>
-<div class="mobile-brand-row">
-    <button onclick="changeChannel('palaartv')">
-        <img src="palaartv-logo.png" alt="PALAAR TV">
-    </button>
-
-    <div class="mobile-brand-text">
-        <h1>PALAAR GROUP</h1>
-        <p>Professional Media<br>& Broadcasting Services</p>
-    </div>
-
-    <button onclick="changeChannel('nilatv')">
-        <img src="nila-tv-logo.png" alt="NILA TV">
-    </button>
 </div>
+<h1>PALAAR GROUP</h1>
+<p>Professional Media & Broadcasting Services</p>
   <div class="player">
     <iframe
       src="https://livetv.ipcloud.live/channels/palaartv/palaartv.php"
