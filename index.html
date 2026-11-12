@@ -21,7 +21,31 @@ header {
   align-items: center;
   border-bottom: 2px solid #d4a52c;
 }
-.logo {
+.ticker {
+    background: #080b12;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 9px 0;
+    border-bottom: 2px solid #d4a52c;
+}
+
+.ticker-text {
+    display: inline-block;
+    padding-left: 100%;
+    animation: tickerMove 25s linear infinite;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.ticker .tv-name { color: #ffcc33; }
+.ticker .event-name { color: #00e676; }
+.ticker .contact { color: #ff4444; }
+
+@keyframes tickerMove {
+    from { transform: translateX(0); }
+    to { transform: translateX(-100%); }
+}
+  .logo {
   font-size: 27px;
   font-weight: bold;
   color: #f5c542;
@@ -158,7 +182,17 @@ header .logo img {
   </div>
   <div class="live">● LIVE NOW</div>
 </header>
-
+<div class="ticker">
+    <div class="ticker-text">
+        <span class="tv-name">📺 PALAAR TV – நேரலை ஒளிபரப்பு</span>
+        &nbsp; | &nbsp;
+        <span class="tv-name">📡 NILA TV – நேரலை ஒளிபரப்பு</span>
+        &nbsp; | &nbsp;
+        <span class="event-name">🎥 அனைத்து நிகழ்ச்சிகளுக்கும் EVENT LIVE ஒளிபரப்பு வசதி</span>
+        &nbsp; | &nbsp;
+        <span class="contact">📢 விளம்பரத் தொடர்புக்கு: 900 360 430 1</span>
+    </div>
+</div>
 <main>
 <h1>PALAAR GROUP</h1>
 <p>Professional Media & Broadcasting Services</p>
