@@ -90,7 +90,28 @@ footer {
   height: 90px;
   object-fit: contain;
   display: block;
-}</style>
+}
+/* HEADER LOGOS - EQUAL SIZE */
+header .logo {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+header .logo img {
+    width: 180px;
+    height: 90px;
+    object-fit: contain;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    header .logo img {
+        width: 130px;
+        height: 65px;
+    }
+}
+</style>
 </head>
 <body>
 
