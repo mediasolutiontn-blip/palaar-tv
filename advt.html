@@ -220,7 +220,8 @@ function updateTextField() {
     "FLASH NEWS AD"
   ].includes(selectedCategory);
 
-  $("adTextField").hidden = !needsText;
+$("adTextField").hidden = !needsText;
+$("adTextField").style.display = needsText ? "flex" : "none";
   $("adText").required = needsText;
 }
 
