@@ -12,6 +12,7 @@ header{padding:22px 5%;background:#111827;border-bottom:2px solid #d4a52c}
 header h1{margin:0;color:var(--gold);font-size:25px}
 header p{margin:7px 0 0;color:var(--muted)}
 main{max-width:1150px;margin:25px auto;padding:0 15px}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
 .notice{background:#302811;border:1px solid #8b7025;padding:13px 15px;border-radius:9px;color:#ffe7a1;line-height:1.5;margin-bottom:18px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .tabs button,.btn{border:0;border-radius:7px;padding:11px 15px;cursor:pointer;font-weight:bold}
@@ -37,13 +38,15 @@ textarea{min-height:90px;resize:vertical}
 .ad-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
 .ad-card h3{margin:0;color:#fff}
 .status{font-size:12px;font-weight:bold;padding:5px 9px;border-radius:20px;background:#34445e}
-.status.active{background:#145b3d;color:#b8ffdb}.status.expired{background:#642b2b;color:#ffd0d0}.status.scheduled{background:#66501d;color:#ffe8a6}
+.status.active{background:#145b3d;color:#b8ffdb}
+.status.expired{background:#642b2b;color:#ffd0d0}
+.status.scheduled{background:#66501d;color:#ffe8a6}
 .meta{color:var(--muted);font-size:13px;line-height:1.7;margin-top:9px}
 .ad-text{white-space:pre-wrap;background:#111a29;padding:10px;border-radius:7px;margin-top:10px}
 .reminder{border-left:4px solid var(--gold);padding:12px;background:#202d42;border-radius:7px;margin:9px 0}
 .empty{color:var(--muted);text-align:center;padding:18px}
 footer{text-align:center;color:#8792a4;padding:25px}
-@media(max-width:650px){form{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{grid-template-columns:1fr}.panel{padding:14px}header{padding:18px 15px}}
+@media(max-width:650px){form,.settings-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{grid-template-columns:1fr}.panel{padding:14px}header{padding:18px 15px}}
 </style>
 </head>
 <body>
@@ -52,76 +55,381 @@ footer{text-align:center;color:#8792a4;padding:25px}
   <p>விளம்பர நிர்வாகம் | MEDIA SOLUTION</p>
 </header>
 <main>
-  <div class="notice"><b>முக்கிய குறிப்பு:</b> இது முதற்கட்ட Dashboard. விளம்பர விவரங்கள் இந்த Browser-ல் மட்டும் சேமிக்கப்படும். 3 நாள் / 1 நாள் Reminder-களை Dashboard திறந்திருக்கும் போது சரிபார்த்து WhatsApp செய்தியைத் தயார் செய்யலாம். Browser மூடியிருந்தாலும் தானாக அனுப்ப Database + Server Scheduler இணைப்பு தேவை.</div>
-  <div class="stats">
+  <div class="notice"><b>முக்கிய குறிப்பு:</b> விளம்பர விவரங்கள் இந்த Browser-ல் சேமிக்கப்படும். 3 நாள் / 1 நாள் Reminder-களை Dashboard திறந்திருக்கும் போது சரிபார்த்து WhatsApp செய்தியைத் தயார் செய்யலாம். Browser மூடியிருந்தாலும் தானாக அனுப்ப Database + Server Scheduler தேவை.</div>
+  <section class="panel">
+    <h2>நிரந்தர WhatsApp தொடர்பு எண்கள்</h2>
+    <p class="meta">இந்த எண்கள் இந்த Browser-ல் சேமிக்கப்படும். ஒவ்வொரு விளம்பரத்திற்கும் மீண்டும் உள்ளிட வேண்டியதில்லை.</p>
+    <div class="settings-grid">
+      <div class="field"><label for="permanentAdminPhone">Admin WhatsApp Number *</label><input id="permanentAdminPhone" placeholder="உதா: 919876543210" inputmode="numeric"></div>
+      <div class="field"><label for="permanentMdPhone">MD WhatsApp Number *</label><input id="permanentMdPhone" placeholder="உதா: 919876543210" inputmode="numeric"></div>
+    </div>
+    <div class="actions"><button class="btn btn-primary" type="button" id="saveContacts">எண்களைச் சேமிக்க</button></div>
+  </section>
+  <section class="stats">
     <div class="stat">மொத்த விளம்பரங்கள்<strong id="totalCount">0</strong></div>
-    <div class="stat">இப்போது செயலில்<strong id="activeCount">0</strong></div>
+    <div class="stat">இப்போது செயல்பாட்டில்<strong id="activeCount">0</strong></div>
     <div class="stat">காலாவதியானவை<strong id="expiredCount">0</strong></div>
-  </div>
+  </section>
+
   <div class="tabs" id="tabs">
-    <button class="active" data-cat="VISUAL AD">VISUAL AD</button>
-    <button data-cat="SCROLLING AD">SCROLLING AD</button>
-    <button data-cat="FLASH NEWS AD">FLASH NEWS AD</button>
-    <button data-cat="S-LOGO AD">S-LOGO AD</button>
-    <button data-cat="SPECIAL PROGRAM AD">SPECIAL PROGRAM AD</button>
+    <button type="button" class="active" data-cat="VISUAL AD">VISUAL AD</button>
+    <button type="button" data-cat="SCROLLING AD">SCROLLING AD</button>
+    <button type="button" data-cat="FLASH NEWS AD">FLASH NEWS AD</button>
+    <button type="button" data-cat="S-LOGO AD">S-LOGO AD</button>
+    <button type="button" data-cat="SPECIAL PROGRAM AD">SPECIAL PROGRAM AD</button>
   </div>
+
   <section class="panel">
     <h2 id="formTitle">VISUAL AD – புதிய விளம்பரம் சேர்க்க</h2>
+
     <form id="adForm">
       <input type="hidden" id="editId">
-      <div class="field"><label for="adName">Advertisement Name / விளம்பரப் பெயர் *</label><input id="adName" required></div>
-      <div class="field"><label for="customerName">Customer Name / வாடிக்கையாளர் பெயர்</label><input id="customerName"></div>
-      <div class="field full"><label for="adText">Advertisement Text / விளம்பர வாசகம் *</label><textarea id="adText" required></textarea></div>
-      <div class="field"><label for="customerPhone">Customer WhatsApp Number (with country code) *</label><input id="customerPhone" placeholder="உதா: 919876543210" required inputmode="numeric"></div>
-      <div class="field"><label for="adminPhone">Admin WhatsApp Number *</label><input id="adminPhone" placeholder="உதா: 919876543210" required inputmode="numeric"></div>
-      <div class="field"><label for="mdPhone">MD WhatsApp Number *</label><input id="mdPhone" placeholder="உதா: 919876543210" required inputmode="numeric"></div>
-      <div class="field"><label for="startAt">Start Date & Time *</label><input id="startAt" type="datetime-local" required></div>
-      <div class="field"><label for="endAt">End Date & Time *</label><input id="endAt" type="datetime-local" required></div>
+
+      <div class="field">
+        <label for="adName">Advertisement Name / விளம்பரப் பெயர் *</label>
+        <input id="adName" required placeholder="விளம்பரத்தின் பெயர்">
+      </div>
+
+      <div class="field">
+        <label for="customerName">Customer Name / வாடிக்கையாளர் பெயர் *</label>
+        <input id="customerName" required placeholder="வாடிக்கையாளர் பெயர்">
+      </div>
+
+      <div class="field full" id="adTextField" hidden>
+        <label for="adText">Advertisement Text / விளம்பர வாசகம் *</label>
+        <textarea id="adText" placeholder="விளம்பர வாசகத்தை உள்ளிடவும்"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="customerPhone">Customer WhatsApp Number *</label>
+        <input id="customerPhone" required inputmode="numeric" placeholder="91XXXXXXXXXX">
+      </div>
+
+      <div class="field">
+        <label for="startAt">விளம்பரம் தொடங்கும் தேதி மற்றும் நேரம் *</label>
+        <input id="startAt" type="datetime-local" required>
+      </div>
+
+      <div class="field">
+        <label for="endAt">விளம்பரம் முடியும் தேதி மற்றும் நேரம் *</label>
+        <input id="endAt" type="datetime-local" required>
+      </div>
+
+      <div class="field full">
+        <label for="notes">குறிப்புகள் (விருப்பத்தேர்வு)</label>
+        <textarea id="notes" placeholder="கூடுதல் விவரங்கள்"></textarea>
+      </div>
+
+      <div class="field full">
+        <div class="actions">
+          <button class="btn btn-primary" type="submit" id="saveAdBtn">விளம்பரத்தைச் சேமிக்க</button>
+          <button class="btn btn-secondary" type="button" id="resetBtn">புதிய விளம்பரம்</button>
+        </div>
+      </div>
     </form>
-    <div class="actions">
-      <button class="btn btn-primary" type="submit" form="adForm">விளம்பரத்தைச் சேமி</button>
-      <button class="btn btn-secondary" type="button" id="resetBtn">புதிய பதிவு / Clear</button>
-    </div>
   </section>
+
   <section class="panel">
     <h2>விளம்பரப் பட்டியல்</h2>
-    <div id="adList"><div class="empty">இன்னும் விளம்பரங்கள் சேர்க்கப்படவில்லை.</div></div>
+    <div id="adList">
+      <div class="empty">இன்னும் விளம்பரங்கள் சேர்க்கப்படவில்லை.</div>
+    </div>
   </section>
+
   <section class="panel">
-    <h2>WhatsApp Reminder – 3 நாட்கள் / 1 நாள்</h2>
-    <p class="meta">முடிவு தேதிக்கு 3 நாட்கள் அல்லது 1 நாள் இருக்கும் விளம்பரங்கள் இங்கே தோன்றும். ஒவ்வொரு தொடர்புக்கும் WhatsApp திறந்து, செய்தியை நீங்கள் சரிபார்த்து Send செய்ய வேண்டும்.</p>
-    <div id="reminderList"><div class="empty">தற்போது Reminder இல்லை.</div></div>
+    <h2>3 நாள் / 1 நாள் WhatsApp Reminder</h2>
+    <p class="meta">விளம்பரம் முடிவடைவதற்கு 3 நாட்களுக்கு முன்பும், 1 நாளுக்கு முன்பும் Reminder பட்டியலில் தோன்றும்.</p>
+    <div id="reminderList">
+      <div class="empty">தற்போது Reminder இல்லை.</div>
+    </div>
   </section>
+
+  <footer>© MEDIA SOLUTION | PALAAR TV ADVT ADMIN</footer>
 </main>
-<footer>© 2026 MEDIA SOLUTION | PALAAR TV</footer>
+
 <script>
-const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
-let selectedCategory=categories[0];
-let ads=JSON.parse(localStorage.getItem("palaartv_ads")||"[]");
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const dateFmt=v=>new Date(v).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
-function status(ad){const now=Date.now(),s=new Date(ad.startAt).getTime(),e=new Date(ad.endAt).getTime();if(now< s)return ["SCHEDULED","scheduled"];if(now>e)return ["EXPIRED","expired"];return ["ACTIVE","active"];}
-function save(){localStorage.setItem("palaartv_ads",JSON.stringify(ads));render();}
-function resetForm(){ $("adForm").reset();$("editId").value="";$("formTitle").textContent=selectedCategory+" – புதிய விளம்பரம் சேர்க்க";}
-$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(!b)return;selectedCategory=b.dataset.cat;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));resetForm();render();});
-$("resetBtn").onclick=resetForm;
-$("adForm").onsubmit=e=>{e.preventDefault();const start=$("startAt").value,end=$("endAt").value;if(new Date(end)<=new Date(start)){alert("End Date & Time, Start Date & Time-க்கு பிறகு இருக்க வேண்டும்.");return;}
-const item={id:$("editId").value||String(Date.now()),category:selectedCategory,name:$("adName").value.trim(),customerName:$("customerName").value.trim(),text:$("adText").value.trim(),customerPhone:$("customerPhone").value.replace(/\D/g,""),adminPhone:$("adminPhone").value.replace(/\D/g,""),mdPhone:$("mdPhone").value.replace(/\D/g,""),startAt:start,endAt:end};
-if(!item.customerPhone||!item.adminPhone||!item.mdPhone){alert("மூன்று WhatsApp எண்களையும் நாட்டுக் குறியீட்டுடன் உள்ளிடுங்கள். உதா: 91XXXXXXXXXX");return;}
-const i=ads.findIndex(a=>a.id===item.id);if(i>=0)ads[i]=item;else ads.push(item);save();resetForm();alert("விளம்பரம் சேமிக்கப்பட்டது.");};
-function waLink(phone,msg){return "https://wa.me/"+phone+"?text="+encodeURIComponent(msg);}
-function reminderDays(ad){const ms=new Date(ad.endAt).getTime()-Date.now();return Math.ceil(ms/86400000);}
-function render(){
-$("totalCount").textContent=ads.length;$("activeCount").textContent=ads.filter(a=>status(a)[0]==="ACTIVE").length;$("expiredCount").textContent=ads.filter(a=>status(a)[0]==="EXPIRED").length;
-const filtered=ads.filter(a=>a.category===selectedCategory).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));
-$("adList").innerHTML=filtered.length?filtered.map(a=>{const [st,cls]=status(a);return `<article class="ad-card"><div class="ad-top"><h3>${esc(a.name)}</h3><span class="status ${cls}">${st}</span></div><div class="meta">Customer: ${esc(a.customerName||"-")}<br>START: ${dateFmt(a.startAt)}<br>END: ${dateFmt(a.endAt)}</div><div class="ad-text">${esc(a.text)}</div><div class="actions"><button class="btn btn-secondary" onclick="editAd('${a.id}')">Edit</button><button class="btn btn-danger" onclick="deleteAd('${a.id}')">Delete</button></div></article>`}).join(""):'<div class="empty">இந்தப் பிரிவில் விளம்பரம் இல்லை.</div>';
-const due=ads.filter(a=>[3,1].includes(reminderDays(a))&&status(a)[0]!=="EXPIRED");
-$("reminderList").innerHTML=due.length?due.map(a=>{const d=reminderDays(a),msg=`வணக்கம் ${a.customerName||""}! உங்கள் PALAAR TV ${a.category} விளம்பரம் "${a.name}" இன்னும் ${d} நாளில் (${dateFmt(a.endAt)}) முடிவடைகிறது. புதுப்பிக்க MEDIA SOLUTION-ஐ தொடர்பு கொள்ளவும்.`;return `<div class="reminder"><b>${esc(a.name)} – ${d} நாள் மீதம்</b><div class="meta">Customer / Admin / MD ஆகியோருக்கு WhatsApp செய்தி தயாரிக்கவும்.</div><div class="actions"><a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(a.customerPhone,msg)}">Customer WhatsApp</a><a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(a.adminPhone,"ADVT Reminder: "+msg)}">Admin WhatsApp</a><a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(a.mdPhone,"ADVT Reminder: "+msg)}">MD WhatsApp</a></div></div>`}).join(""):'<div class="empty">3 நாள் / 1 நாள் Reminder வேண்டிய விளம்பரம் தற்போது இல்லை.</div>';
+const categories = [
+  "VISUAL AD",
+  "SCROLLING AD",
+  "FLASH NEWS AD",
+  "S-LOGO AD",
+  "SPECIAL PROGRAM AD"
+];
+
+let selectedCategory = categories[0];
+let ads = JSON.parse(localStorage.getItem("palaar_tv_ads") || "[]");
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  }[c]));
 }
-window.editAd=id=>{const a=ads.find(x=>x.id===id);if(!a)return;selectedCategory=a.category;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.cat===selectedCategory));$("formTitle").textContent=selectedCategory+" – விளம்பரத்தைத் திருத்து";$("editId").value=a.id;$("adName").value=a.name;$("customerName").value=a.customerName;$("adText").value=a.text;$("customerPhone").value=a.customerPhone;$("adminPhone").value=a.adminPhone;$("mdPhone").value=a.mdPhone;$("startAt").value=a.startAt;$("endAt").value=a.endAt;window.scrollTo({top:0,behavior:"smooth"});};
-window.deleteAd=id=>{if(confirm("இந்த விளம்பரத்தை நீக்கவா?")){ads=ads.filter(a=>a.id!==id);save();}};
+
+function cleanPhone(value) {
+  return String(value || "").replace(/\D/g, "");
+}
+
+function saveContacts() {
+  const admin = cleanPhone($("permanentAdminPhone").value);
+  const md = cleanPhone($("permanentMdPhone").value);
+
+  if (admin.length < 10 || md.length < 10) {
+    alert("சரியான Admin மற்றும் MD WhatsApp எண்களை உள்ளிடவும்.");
+    return;
+  }
+
+  localStorage.setItem("palaar_admin_phone", admin);
+  localStorage.setItem("palaar_md_phone", md);
+  alert("Admin மற்றும் MD எண்கள் சேமிக்கப்பட்டன.");
+  render();
+}
+
+$("saveContacts").addEventListener("click", saveContacts);
+
+$("permanentAdminPhone").value =
+  localStorage.getItem("palaar_admin_phone") || "";
+
+$("permanentMdPhone").value =
+  localStorage.getItem("palaar_md_phone") || "";
+
+function getStatus(ad) {
+  const now = Date.now();
+  const start = new Date(ad.startAt).getTime();
+  const end = new Date(ad.endAt).getTime();
+
+  if (now < start) return ["SCHEDULED", "scheduled"];
+  if (now > end) return ["EXPIRED", "expired"];
+  return ["ACTIVE", "active"];
+}
+
+function resetForm() {
+  $("adForm").reset();
+  $("editId").value = "";
+  $("formTitle").textContent =
+    selectedCategory + " – புதிய விளம்பரம் சேர்க்க";
+  $("saveAdBtn").textContent = "விளம்பரத்தைச் சேமிக்க";
+  updateTextField();
+}
+
+function updateTextField() {
+  const needsText = [
+    "SCROLLING AD",
+    "FLASH NEWS AD"
+  ].includes(selectedCategory);
+
+  $("adTextField").hidden = !needsText;
+  $("adText").required = needsText;
+}
+
+$("tabs").addEventListener("click", event => {
+  const button = event.target.closest("button[data-cat]");
+  if (!button) return;
+
+  selectedCategory = button.dataset.cat;
+
+  document.querySelectorAll("#tabs button").forEach(btn => {
+    btn.classList.toggle("active", btn === button);
+  });
+
+  resetForm();
+  render();
+});
+
+$("resetBtn").addEventListener("click", resetForm);
+
+$("adForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const admin = localStorage.getItem("palaar_admin_phone") || "";
+  const md = localStorage.getItem("palaar_md_phone") || "";
+
+  if (!admin || !md) {
+    alert("முதலில் Admin மற்றும் MD WhatsApp எண்களைச் சேமிக்கவும்.");
+    return;
+  }
+
+  const start = $("startAt").value;
+  const end = $("endAt").value;
+
+  if (new Date(end) <= new Date(start)) {
+    alert("முடியும் தேதி, தொடங்கும் தேதிக்குப் பிறகு இருக்க வேண்டும்.");
+    return;
+  }
+
+  const needsText = [
+    "SCROLLING AD",
+    "FLASH NEWS AD"
+  ].includes(selectedCategory);
+
+  const item = {
+    id: $("editId").value || String(Date.now()),
+    category: selectedCategory,
+    name: $("adName").value.trim(),
+    customerName: $("customerName").value.trim(),
+    text: needsText ? $("adText").value.trim() : "",
+    customerPhone: cleanPhone($("customerPhone").value),
+    startAt: start,
+    endAt: end,
+    notes: $("notes").value.trim()
+  };
+
+  if (!item.name || !item.customerName ||
+      item.customerPhone.length < 10 ||
+      (needsText && !item.text)) {
+    alert("அனைத்து தேவையான விவரங்களையும் சரியாக உள்ளிடவும்.");
+    return;
+  }
+
+  const index = ads.findIndex(ad => ad.id === item.id);
+
+  if (index >= 0) {
+    ads[index] = item;
+  } else {
+    ads.push(item);
+  }
+
+  localStorage.setItem("palaar_tv_ads", JSON.stringify(ads));
+
+  alert("விளம்பரம் வெற்றிகரமாகச் சேமிக்கப்பட்டது.");
+  resetForm();
+  render();
+});
+
+function dateText(value) {
+  return new Date(value).toLocaleString("ta-IN");
+}
+
+function reminderDays(ad) {
+  const ms = new Date(ad.endAt).getTime() - Date.now();
+  return Math.ceil(ms / 86400000);
+}
+
+function whatsappLink(phone, message) {
+  return "https://wa.me/" + cleanPhone(phone) +
+    "?text=" + encodeURIComponent(message);
+}
+
+function reminderMessage(ad, days) {
+  return "வணக்கம் " + ad.customerName +
+    ", உங்கள் PALAAR TV " + ad.category +
+    " விளம்பரம் \"" + ad.name +
+    "\" இன்னும் " + days +
+    " நாளில் முடிவடைகிறது. புதுப்பிக்க MEDIA SOLUTION-ஐ தொடர்பு கொள்ளவும்.";
+}
+
+function render() {
+  $("totalCount").textContent = ads.length;
+
+  $("activeCount").textContent =
+    ads.filter(ad => getStatus(ad)[0] === "ACTIVE").length;
+
+  $("expiredCount").textContent =
+    ads.filter(ad => getStatus(ad)[0] === "EXPIRED").length;
+
+  const filtered = ads
+    .filter(ad => ad.category === selectedCategory)
+    .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
+
+  $("adList").innerHTML = filtered.length
+    ? filtered.map(ad => {
+        const [status, css] = getStatus(ad);
+
+        return `
+          <article class="ad-card">
+            <div class="ad-top">
+              <h3>${escapeHTML(ad.name)}</h3>
+              <span class="status ${css}">${status}</span>
+            </div>
+            <div class="meta">
+              வகை: ${escapeHTML(ad.category)}<br>
+              வாடிக்கையாளர்: ${escapeHTML(ad.customerName)}<br>
+              WhatsApp: ${escapeHTML(ad.customerPhone)}<br>
+              தொடக்கம்: ${escapeHTML(dateText(ad.startAt))}<br>
+              முடிவு: ${escapeHTML(dateText(ad.endAt))}
+            </div>
+            ${ad.text ? `<div class="ad-text">${escapeHTML(ad.text)}</div>` : ""}
+            ${ad.notes ? `<div class="meta">குறிப்பு: ${escapeHTML(ad.notes)}</div>` : ""}
+            <div class="actions">
+              <button class="btn btn-secondary" type="button"
+                onclick="editAd('${ad.id}')">திருத்து</button>
+              <button class="btn btn-danger" type="button"
+                onclick="deleteAd('${ad.id}')">நீக்கு</button>
+            </div>
+          </article>`;
+      }).join("")
+    : '<div class="empty">இந்தப் பிரிவில் விளம்பரங்கள் இல்லை.</div>';
+
+  const due = ads.filter(ad => {
+    const days = reminderDays(ad);
+    return [3, 1].includes(days) &&
+      getStatus(ad)[0] !== "EXPIRED";
+  });
+
+  $("reminderList").innerHTML = due.length
+    ? due.map(ad => {
+        const days = reminderDays(ad);
+        const message = reminderMessage(ad, days);
+        const admin = localStorage.getItem("palaar_admin_phone") || "";
+        const md = localStorage.getItem("palaar_md_phone") || "";
+
+        return `
+          <div class="reminder">
+            <b>${escapeHTML(ad.name)}</b><br>
+            ${days} நாள் மட்டுமே உள்ளது.<br>
+            <div class="actions">
+              <a class="btn btn-wa" target="_blank"
+                href="${whatsappLink(ad.customerPhone, message)}">Customer WhatsApp</a>
+              <a class="btn btn-wa" target="_blank"
+                href="${whatsappLink(admin, message)}">Admin WhatsApp</a>
+              <a class="btn btn-wa" target="_blank"
+                href="${whatsappLink(md, message)}">MD WhatsApp</a>
+            </div>
+          </div>`;
+      }).join("")
+    : '<div class="empty">தற்போது 3 நாள் / 1 நாள் Reminder இல்லை.</div>';
+}
+
+window.editAd = function(id) {
+  const ad = ads.find(item => item.id === id);
+  if (!ad) return;
+
+  selectedCategory = ad.category;
+
+  document.querySelectorAll("#tabs button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.cat === selectedCategory);
+  });
+
+  updateTextField();
+
+  $("editId").value = ad.id;
+  $("adName").value = ad.name;
+  $("customerName").value = ad.customerName;
+  $("adText").value = ad.text || "";
+  $("customerPhone").value = ad.customerPhone;
+  $("startAt").value = ad.startAt;
+  $("endAt").value = ad.endAt;
+  $("notes").value = ad.notes || "";
+
+  $("formTitle").textContent = selectedCategory + " – விளம்பரத்தைத் திருத்து";
+  $("saveAdBtn").textContent = "மாற்றங்களைச் சேமிக்க";
+
+  window.scrollTo({top: 0, behavior: "smooth"});
+};
+
+window.deleteAd = function(id) {
+  if (!confirm("இந்த விளம்பரத்தை நீக்க வேண்டுமா?")) return;
+
+  ads = ads.filter(ad => ad.id !== id);
+  localStorage.setItem("palaar_tv_ads", JSON.stringify(ads));
+  render();
+};
+
+updateTextField();
 render();
+setInterval(render, 60000);
 </script>
 </body>
 </html>
