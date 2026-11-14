@@ -113,7 +113,7 @@ textarea{min-height:75px}
 }
 </style>
 <style>
-#dashboard[hidden],#loginPanel[hidden]{display:none!important}
+#dashboard[hidden]{display:none!important}
 .statusline{background:#10253a;color:#d8ebff;padding:10px;border-radius:8px;margin-top:12px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 </style>
@@ -121,20 +121,8 @@ textarea{min-height:75px}
 <body>
 <header><h2>PALAAR TV – ADVERTISEMENT MANAGEMENT</h2><p>விளம்பர நிர்வாகம் | MEDIA SOLUTION</p></header>
 <main>
-<section class="panel" id="loginPanel">
-<h3>MD / Admin Login</h3>
-<p class="small">அங்கீகரிக்கப்பட்ட மொபைல் எண்ணுக்கு OTP அனுப்பப்படும்.</p>
-<div class="form-grid">
-<div><label>மொபைல் எண் (+91 உடன்)</label><input id="loginPhone" type="tel" placeholder="+919XXXXXXXXX"></div>
-<div><label>OTP</label><input id="otpCode" inputmode="numeric" placeholder="SMS OTP"></div>
-</div>
-<div class="form-actions"><button class="primary" id="sendOtpBtn" type="button">OTP அனுப்பு</button><button id="verifyOtpBtn" type="button">OTP சரிபார் / Login</button></div>
-<div id="recaptcha-container"></div><div id="loginStatus" class="statusline">உள்நுழைய அங்கீகரிக்கப்பட்ட மொபைல் எண்ணைப் பயன்படுத்தவும்.</div>
-</section>
-
-<div id="dashboard" hidden>
-<div class="row" style="margin-bottom:12px"><span id="signedInAs" class="small"></span><button id="logoutBtn" type="button">Logout</button></div>
-<div class="notice"><b>முக்கிய குறிப்பு:</b> விளம்பர விவரங்கள் Firebase Firestore-ல் சேமிக்கப்படும். அங்கீகரிக்கப்பட்ட MD மற்றும் Admin ஒரே பதிவுகளைப் பார்க்கலாம்.</div>
+<div id="dashboard">
+<div class="notice"><b>முக்கிய குறிப்பு:</b> விளம்பர விவரங்கள் Firebase Firestore-ல் சேமிக்கப்படும். இந்த Dashboard-ல் OTP / Password Login தேவையில்லை.</div>
 
 <section class="panel">
 <h3>நிரந்தர WhatsApp தொடர்பு எண்கள்</h3>
@@ -191,10 +179,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
-let ads=[],selectedCategory="ALL",confirmation=null,unsubscribeAds=null,recaptcha=null;
+let ads=[],selectedCategory="ALL",unsubscribeAds=null;
 
 function $(id){return document.getElementById(id)}
-function statusMessage(t){$("loginStatus").textContent=t}
 function normalizePhone(v){let s=String(v||"").trim().replace(/[^\d+]/g,"");if(s.startsWith("00"))s="+"+s.slice(2);if(!s.startsWith("+")&&s.length===10)s="+91"+s;return s}
 function parseDate(v){const p=v.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
 function todayDate(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
@@ -203,25 +190,14 @@ function dayDiff(a,b){return Math.round((b-a)/86400000)}
 function getStats(a){const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt),total=dayDiff(st,en)+1,elapsed=Math.max(0,Math.min(total,dayDiff(st,t)+1)),remaining=Math.max(0,dayDiff(t,en));let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";return{total,elapsed,remaining,status}}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function generateInvoice(){return"PTV-"+Date.now().toString().slice(-9)}
-function normalizeId(phone){return phone}
-function setDashboard(show){$("loginPanel").hidden=show;$("dashboard").hidden=!show}
-function getRecaptcha(){if(!recaptcha)recaptcha=new firebase.auth.RecaptchaVerifier("recaptcha-container",{size:"normal"});return recaptcha}
-
-$("sendOtpBtn").onclick=async()=>{try{const phone=normalizePhone($("loginPhone").value);if(!/^\+\d{10,15}$/.test(phone)){statusMessage("சரியான மொபைல் எண்ணை +91 உடன் உள்ளிடுங்கள்.");return}confirmation=await auth.signInWithPhoneNumber(phone,getRecaptcha());statusMessage("OTP அனுப்பப்பட்டது. SMS-ல் வந்த OTP-ஐ உள்ளிடுங்கள்.");}catch(e){statusMessage("OTP அனுப்ப முடியவில்லை: "+e.message);if(recaptcha){recaptcha.clear();recaptcha=null}}};
-$("verifyOtpBtn").onclick=async()=>{try{if(!confirmation){statusMessage("முதலில் OTP அனுப்பு என்பதை அழுத்துங்கள்.");return}await confirmation.confirm($("otpCode").value.trim());}catch(e){statusMessage("OTP சரிபார்ப்பு தோல்வி: "+e.message)}};
-$("logoutBtn").onclick=()=>auth.signOut();
-
-auth.onAuthStateChanged(async user=>{
- if(!user){setDashboard(false);if(unsubscribeAds){unsubscribeAds();unsubscribeAds=null}return}
- try{
-  const allowed=await db.collection("authorizedUsers").doc(user.phoneNumber).get();
-  if(!allowed.exists){await auth.signOut();statusMessage("இந்த மொபைல் எண் MD/Admin அனுமதி பட்டியலில் இல்லை.");return}
-  $("signedInAs").textContent="Login: "+user.phoneNumber+" | Role: "+(allowed.data().role||"Staff");
+function startDashboard(){
+ auth.signInAnonymously().then(async()=>{
   await migrateOldBrowserData();
-  setDashboard(true);loadContacts();listenAds();
- }catch(e){await auth.signOut();statusMessage("அனுமதி சரிபார்க்க முடியவில்லை: "+e.message)}
-});
-
+  loadContacts();listenAds();
+ }).catch(e=>{
+  document.getElementById("adList").innerHTML='<div class="empty">Firebase Anonymous Authentication-ஐ Enable செய்யவும். '+esc(e.message)+'</div>';
+ });
+}
 function listenAds(){if(unsubscribeAds)unsubscribeAds();unsubscribeAds=db.collection("advertisements").onSnapshot(snap=>{ads=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.recordType!=="system");render()},e=>alert("Firebase தரவைப் பெற முடியவில்லை: "+e.message))}
 async function migrateOldBrowserData(){
  const doneKey="palaartv_firebase_migration_v1";
@@ -293,6 +269,7 @@ function render(){
  <div class="ad-actions"><button class="pdf" onclick="downloadInvoice('${a.id}')">PDF Invoice</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','customer')">Customer WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','md')">MD WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','admin')">Admin WhatsApp</button><button onclick="editAd('${a.id}')">Edit</button><button class="danger" onclick="deleteAd('${a.id}')">Delete</button></div></article>`
  }).join("")
 }
+startDashboard();
 </script>
 </body>
 </html>
