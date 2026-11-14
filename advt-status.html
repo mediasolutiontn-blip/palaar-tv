@@ -1,108 +1,217 @@
-
 <!DOCTYPE html>
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PALAAR TV - ADVT Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PALAAR TV - ADVT Admin Dashboard</title>
 <style>
-:root{--gold:#f5c542;--bg:#080b12;--panel:#151e2e;--muted:#aeb8c8}
+:root{--bg:#080b12;--panel:#151e2e;--panel2:#202d42;--gold:#f5c542;--text:#f5f7fb;--muted:#aeb8c8;--red:#ff5555;--green:#20c879}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:white;font-family:Arial,sans-serif}
-header{background:#111827;padding:25px 5%;border-bottom:3px solid var(--gold)}
-h1{color:var(--gold);margin:0;font-size:27px}
-header p{color:#c5ccda;margin-bottom:0}
-main{max-width:1100px;margin:25px auto;padding:0 15px}
-.category{background:var(--panel);border:1px solid #34445e;border-radius:12px;padding:20px;margin-bottom:18px}
-h2{color:var(--gold);font-size:21px;margin:0 0 15px}
-.ad{background:#202d42;padding:15px;border-radius:8px;margin:10px 0}
-.ad h3{margin:0 0 10px;color:white;font-size:19px}
-.details{color:var(--muted);line-height:1.8;font-size:14px}
-.active{color:#69efad;font-weight:bold}
-.empty{color:var(--muted);padding:12px}
-button{background:var(--gold);border:0;padding:12px 20px;border-radius:7px;font-weight:bold;cursor:pointer}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:22px 5%;background:#111827;border-bottom:2px solid #d4a52c}
+header h1{margin:0;color:var(--gold);font-size:25px}
+header p{margin:7px 0 0;color:var(--muted)}
+main{max-width:1200px;margin:25px auto;padding:0 15px}
+.notice{background:#302811;border:1px solid #8b7025;padding:13px 15px;border-radius:9px;color:#ffe7a1;line-height:1.5;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--panel2);border-radius:9px;padding:14px}
+.stat strong{display:block;font-size:24px;color:var(--gold);margin-top:5px}
+.category-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.category-count{background:var(--panel);border:1px solid #34445e;border-radius:10px;padding:13px}
+.category-count b{display:block;color:var(--gold);font-size:13px;min-height:32px}
+.category-count strong{font-size:25px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.tabs button,.btn{border:0;border-radius:7px;padding:11px 15px;cursor:pointer;font-weight:bold;text-decoration:none;display:inline-block}
+.tabs button{background:#26364d;color:#fff}
+.tabs button.active{background:var(--gold);color:#111}
+.panel{background:var(--panel);border:1px solid #34445e;border-radius:12px;padding:20px;margin-bottom:20px}
+h2{font-size:20px;margin:0 0 16px;color:var(--gold)}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+label{font-size:13px;color:#dce3ed;font-weight:bold}
+input,textarea{width:100%;padding:11px;border-radius:7px;border:1px solid #52627a;background:#0d1420;color:white;font:inherit}
+textarea{min-height:90px;resize:vertical}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.btn-primary{background:var(--gold);color:#111}
+.btn-secondary{background:#34445e;color:#fff}
+.btn-danger{background:#8d3030;color:white}
+.btn-wa{background:#168c55;color:white}
+.btn-pdf{background:#245a91;color:white}
+.ad-card{background:var(--panel2);border:1px solid #3b4d67;border-radius:9px;padding:15px;margin:10px 0}
+.ad-top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ad-card h3{margin:0;color:#fff}
+.status{font-size:12px;font-weight:bold;padding:5px 9px;border-radius:20px;background:#34445e}
+.status.active{background:#145b3d;color:#b8ffdb}.status.expired{background:#642b2b;color:#ffd0d0}.status.scheduled{background:#66501d;color:#ffe8a6}
+.meta{color:var(--muted);font-size:13px;line-height:1.8;margin-top:9px}
+.ad-text{white-space:pre-wrap;background:#111a29;padding:10px;border-radius:7px;margin-top:10px}
+.empty{color:var(--muted);text-align:center;padding:18px}
+.count-inline{color:#9fffc7;font-size:14px;font-weight:bold}
 footer{text-align:center;color:#8792a4;padding:25px}
+@media(max-width:850px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){form{grid-template-columns:1fr}.field.full{grid-column:auto}.stats{grid-template-columns:1fr}.panel{padding:14px}header{padding:18px 15px}}
 </style>
 </head>
 <body>
 <header>
-<h1>PALAAR TV – ADVT</h1>
-<p>விளம்பர நிலவரம் | MEDIA SOLUTION</p>
+  <h1>PALAAR TV – ADVT ADMIN</h1>
+  <p>விளம்பர நிர்வாகம் | MEDIA SOLUTION</p>
 </header>
-
 <main>
-<div id="status"></div>
-<div style="text-align:center;margin:20px">
-<button onclick="loadAds()">புதுப்பிக்கவும்</button>
-</div>
-</main>
+  <div class="notice"><b>முக்கிய குறிப்பு:</b> தற்போதைய பதிப்பு விளம்பரங்களை இந்த Browser-ன் localStorage-ல் சேமிக்கிறது. அதே கணினி மற்றும் Browser-ல் பழைய பதிவுகள் இருந்தால் அவை தொடரும். வேறு கணினிகளிலும் பகிர்ந்து பயன்படுத்த Firebase போன்ற Database இணைப்பு தேவை.</div>
 
-<footer>© MEDIA SOLUTION | PALAAR TV</footer>
+  <section class="panel">
+    <h2>நிரந்தர WhatsApp தொடர்பு எண்கள்</h2>
+    <p class="meta">Admin மற்றும் MD எண்களை நாட்டுக் குறியீட்டுடன் உள்ளிடவும். உதாரணம்: 919876543210</p>
+    <form id="contactForm">
+      <div class="field"><label for="permanentAdminPhone">Admin WhatsApp Number *</label><input id="permanentAdminPhone" inputmode="numeric" placeholder="919876543210"></div>
+      <div class="field"><label for="permanentMdPhone">MD WhatsApp Number *</label><input id="permanentMdPhone" inputmode="numeric" placeholder="919876543210"></div>
+    </form>
+    <div class="actions"><button class="btn btn-primary" type="button" id="saveContacts">எண்களைச் சேமிக்க</button></div>
+  </section>
+
+  <div class="stats">
+    <div class="stat">மொத்த விளம்பரங்கள்<strong id="totalCount">0</strong></div>
+    <div class="stat">இப்போது Running<strong id="activeCount">0</strong></div>
+    <div class="stat">காலாவதியானவை<strong id="expiredCount">0</strong></div>
+  </div>
+  <section class="category-grid" id="categoryCounts"></section>
+
+  <div class="tabs" id="tabs">
+    <button class="active" data-cat="VISUAL AD">VISUAL AD</button>
+    <button data-cat="SCROLLING AD">SCROLLING AD</button>
+    <button data-cat="FLASH NEWS AD">FLASH NEWS AD</button>
+    <button data-cat="S-LOGO AD">S-LOGO AD</button>
+    <button data-cat="SPECIAL PROGRAM AD">SPECIAL PROGRAM AD</button>
+  </div>
+
+  <section class="panel">
+    <h2 id="formTitle">VISUAL AD – புதிய விளம்பரம் சேர்க்க</h2>
+    <form id="adForm">
+      <input type="hidden" id="editId">
+      <div class="field"><label for="adName">Advertisement Name / விளம்பரப் பெயர் *</label><input id="adName" required></div>
+      <div class="field"><label for="customerName">Customer Name / வாடிக்கையாளர் பெயர் *</label><input id="customerName" required></div>
+      <div class="field"><label for="customerPhone">Customer Mobile / WhatsApp Number *</label><input id="customerPhone" required inputmode="numeric" placeholder="919876543210"></div>
+      <div class="field"><label for="startAt">Start Date & Time *</label><input id="startAt" type="datetime-local" required></div>
+      <div class="field"><label for="endAt">End Date & Time *</label><input id="endAt" type="datetime-local" required></div>
+      <div class="field full" id="adTextField"><label for="adText">Advertisement Text / விளம்பர வாசகம்</label><textarea id="adText"></textarea></div>
+    </form>
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" form="adForm">விளம்பரத்தைச் சேமி</button>
+      <button class="btn btn-secondary" type="button" id="resetBtn">புதிய பதிவு / Clear</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>விளம்பரப் பட்டியல் – <span id="selectedCount" class="count-inline">0 Running</span></h2>
+    <div id="adList"><div class="empty">இன்னும் விளம்பரங்கள் சேர்க்கப்படவில்லை.</div></div>
+  </section>
+</main>
+<footer>© 2026 MEDIA SOLUTION | PALAAR TV</footer>
 
 <script>
-const categories = [
-"VISUAL AD",
-"SCROLLING AD",
-"FLASH NEWS AD",
-"S-LOGO AD",
-"SPECIAL PROGRAM AD"
-];
-
-function safe(value){
-return String(value || "").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#39;"
-}[c]));
+const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
+let selectedCategory=categories[0];
+let ads=JSON.parse(localStorage.getItem("palaartv_ads")||"[]");
+let contacts=JSON.parse(localStorage.getItem("palaartv_advt_contacts")||"{}");
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateFmt=v=>new Date(v).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"});
+const dayFmt=n=>Math.max(0,n);
+function status(ad){const now=Date.now(),s=new Date(ad.startAt).getTime(),e=new Date(ad.endAt).getTime();if(now<s)return ["SCHEDULED","scheduled"];if(now>e)return ["EXPIRED","expired"];return ["RUNNING","active"];}
+function dayStats(ad){
+ const start=new Date(ad.startAt).getTime(),end=new Date(ad.endAt).getTime(),now=Date.now();
+ const total=Math.max(1,Math.ceil((end-start)/86400000));
+ const elapsed=now<start?0:Math.min(total,Math.max(0,Math.floor((Math.min(now,end)-start)/86400000)));
+ const remaining=now<start?Math.ceil((end-start)/86400000):Math.max(0,Math.ceil((end-now)/86400000));
+ return {total,elapsed,remaining};
 }
-
-function dateText(value){
-return new Date(value).toLocaleString("ta-IN");
+function save(){localStorage.setItem("palaartv_ads",JSON.stringify(ads));render();}
+function needsText(){return ["SCROLLING AD","FLASH NEWS AD"].includes(selectedCategory);}
+function updateTextField(){$("adTextField").style.display=needsText()?"flex":"none";}
+function resetForm(){$("adForm").reset();$("editId").value="";$("formTitle").textContent=selectedCategory+" – புதிய விளம்பரம் சேர்க்க";updateTextField();}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-cat]");if(!b)return;selectedCategory=b.dataset.cat;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x===b));resetForm();render();});
+$("resetBtn").onclick=resetForm;
+$("permanentAdminPhone").value=contacts.adminPhone||"";
+$("permanentMdPhone").value=contacts.mdPhone||"";
+$("saveContacts").onclick=()=>{const admin=$("permanentAdminPhone").value.replace(/\D/g,""),md=$("permanentMdPhone").value.replace(/\D/g,"");if(!admin||!md){alert("Admin மற்றும் MD WhatsApp எண்களை நாட்டுக் குறியீட்டுடன் உள்ளிடுங்கள்.");return;}contacts={adminPhone:admin,mdPhone:md};localStorage.setItem("palaartv_advt_contacts",JSON.stringify(contacts));alert("Admin மற்றும் MD எண்கள் சேமிக்கப்பட்டன.");};
+$("adForm").onsubmit=e=>{
+ e.preventDefault();
+ const start=$("startAt").value,end=$("endAt").value;
+ if(new Date(end)<=new Date(start)){alert("End Date & Time, Start Date & Time-க்கு பிறகு இருக்க வேண்டும்.");return;}
+ const item={id:$("editId").value||String(Date.now()),category:selectedCategory,name:$("adName").value.trim(),customerName:$("customerName").value.trim(),text:needsText()?$("adText").value.trim():"",customerPhone:$("customerPhone").value.replace(/\D/g,""),startAt:start,endAt:end};
+ if(!item.customerName||!item.customerPhone){alert("Customer Name மற்றும் Mobile Number கட்டாயம்.");return;}
+ if(needsText()&&!item.text){alert("விளம்பர வாசகத்தை உள்ளிடுங்கள்.");return;}
+ const i=ads.findIndex(a=>a.id===item.id);if(i>=0)ads[i]=item;else ads.push(item);
+ save();resetForm();alert("விளம்பரம் சேமிக்கப்பட்டது.");
+};
+function invoiceHTML(ad){
+ const d=dayStats(ad);
+ return `<!DOCTYPE html><html lang="ta"><head><meta charset="UTF-8"><title>PALAAR TV Invoice - ${esc(ad.name)}</title>
+ <style>
+ @page{size:A4;margin:18mm}body{font-family:Arial,sans-serif;color:#172033;margin:0}
+ .sheet{max-width:760px;margin:auto;border:2px solid #d5a52d;padding:28px}
+ .logo{text-align:center;margin-bottom:12px}.logo img{max-width:330px;max-height:145px;object-fit:contain}
+ h1{text-align:center;color:#a47700;margin:8px 0 4px;font-size:22px}
+ .sub{text-align:center;font-size:12px;line-height:1.7;color:#444;margin-bottom:20px}
+ .tag{text-align:center;font-weight:bold;letter-spacing:2px;border-top:1px solid #d5a52d;border-bottom:1px solid #d5a52d;padding:10px;margin:16px 0}
+ h2{font-size:15px;background:#f5f0df;padding:9px;margin:18px 0 8px}
+ table{width:100%;border-collapse:collapse;font-size:13px}td{border:1px solid #ddd;padding:10px}td:first-child{width:42%;font-weight:bold;background:#fafafa}
+ .footer{text-align:center;margin-top:28px;font-size:12px;color:#555}
+ .print{text-align:center;margin:15px}@media print{.print{display:none}.sheet{border:0}}
+ </style></head><body><div class="sheet">
+ <div class="logo"><img src="palaartv-logo.png" alt="PALAAR TV Logo" onerror="this.style.display='none'"></div>
+ <h1>PALAAR TV – ADVERTISEMENT INVOICE</h1>
+ <div class="sub">No.44, Gandhi Nagar, Vaalakarai Amman Kovil (Opp),<br>Ranipet - 632 401. &nbsp; Cell: 900 360 430 1.</div>
+ <div class="tag">ADVERTISEMENT DETAILS</div>
+ <h2>Customer Details</h2><table>
+ <tr><td>Customer Name</td><td>${esc(ad.customerName)}</td></tr>
+ <tr><td>Mobile Number</td><td>${esc(ad.customerPhone)}</td></tr></table>
+ <h2>Advertisement Information</h2><table>
+ <tr><td>Advertisement Name</td><td>${esc(ad.name)}</td></tr>
+ <tr><td>Advertisement Category</td><td>${esc(ad.category)}</td></tr>
+ <tr><td>Start Date & Time</td><td>${dateFmt(ad.startAt)}</td></tr>
+ <tr><td>End Date & Time</td><td>${dateFmt(ad.endAt)}</td></tr>
+ <tr><td>Total Duration</td><td>${d.total} days</td></tr>
+ <tr><td>Completed Days</td><td>${d.elapsed} days</td></tr>
+ <tr><td>Remaining Days</td><td>${d.remaining} days</td></tr>
+ <tr><td>Invoice Generated</td><td>${dateFmt(new Date())}</td></tr></table>
+ <div class="footer">Thank you for advertising with PALAAR TV<br><b>MEDIA SOLUTION</b></div>
+ </div><div class="print"><button onclick="window.print()">Print / Save as PDF</button></div></body></html>`;
 }
-
-function loadAds(){
-let ads=[];
-try{
-ads=JSON.parse(localStorage.getItem("palaar_tv_ads")||"[]");
-}catch(e){ads=[];}
-
-const now=new Date();
-let output="";
-
-categories.forEach(category=>{
-const running=ads.filter(ad=>
-ad.category===category &&
-new Date(ad.startAt)<=now &&
-new Date(ad.endAt)>=now
-);
-
-output+=`<section class="category">
-<h2>${category}</h2>`;
-
-if(running.length===0){
-output+=`<div class="empty">தற்போது இந்த வகையில் விளம்பரம் ஓடவில்லை.</div>`;
-}else{
-running.forEach(ad=>{
-output+=`
-<div class="ad">
-<h3>${safe(ad.name)}</h3>
-<div class="active">● தற்போது ஒளிபரப்பில் உள்ளது</div>
-<div class="details">
-விளம்பர வகை: ${safe(ad.category)}<br>
-தொடங்கும் தேதி: ${safe(dateText(ad.startAt))}<br>
-முடியும் தேதி: ${safe(dateText(ad.endAt))}
-</div>
-${ad.text ? `<div class="details">விளம்பர வாசகம்: ${safe(ad.text)}</div>` : ""}
-</div>`;
-});
+function downloadInvoice(ad){
+ const w=window.open("","_blank");if(!w){alert("Popup blocked. இந்த தளத்திற்கு Pop-ups அனுமதிக்கவும்.");return;}
+ w.document.open();w.document.write(invoiceHTML(ad));w.document.close();
 }
-output+="</section>";
-});
-
-document.getElementById("status").innerHTML=output;
+function waMessage(ad){
+ const d=dayStats(ad);
+ return `வணக்கம் ${ad.customerName},\n\nஉங்கள் PALAAR TV விளம்பர விவரங்கள்:\nவிளம்பரம்: ${ad.name}\nவகை: ${ad.category}\nதொடங்கிய தேதி: ${dateFmt(ad.startAt)}\nமுடியும் தேதி: ${dateFmt(ad.endAt)}\nமொத்த நாட்கள்: ${d.total}\nஓடிய நாட்கள்: ${d.elapsed}\nமீதமுள்ள நாட்கள்: ${d.remaining}\n\nPALAAR TV, Ranipet.`;
 }
-
-loadAds();
-setInterval(loadAds,30000);
+function waLink(phone,msg){return "https://wa.me/"+phone+"?text="+encodeURIComponent(msg);}
+function render(){
+ const active=ads.filter(a=>status(a)[0]==="RUNNING").length;
+ $("totalCount").textContent=ads.length;
+ $("activeCount").textContent=active;
+ $("expiredCount").textContent=ads.filter(a=>status(a)[0]==="EXPIRED").length;
+ $("categoryCounts").innerHTML=categories.map(c=>{const n=ads.filter(a=>a.category===c&&status(a)[0]==="RUNNING").length;return `<div class="category-count"><b>${esc(c)}</b><strong>${n}</strong><div class="meta">Running Ads</div></div>`}).join("");
+ const filtered=ads.filter(a=>a.category===selectedCategory).sort((a,b)=>new Date(a.startAt)-new Date(b.startAt));
+ const running=filtered.filter(a=>status(a)[0]==="RUNNING").length;
+ $("selectedCount").textContent=running+" Running / "+filtered.length+" Total";
+ $("adList").innerHTML=filtered.length?filtered.map(a=>{
+  const [st,cls]=status(a),d=dayStats(a),msg=waMessage(a);
+  return `<article class="ad-card"><div class="ad-top"><h3>${esc(a.name)}</h3><span class="status ${cls}">${st}</span></div>
+  <div class="meta">Customer: ${esc(a.customerName||"-")}<br>Mobile: ${esc(a.customerPhone||"-")}<br>START: ${dateFmt(a.startAt)}<br>END: ${dateFmt(a.endAt)}<br>Total Days: ${d.total} | Completed: ${d.elapsed} | <b>Remaining: ${d.remaining} days</b></div>
+  ${a.text?`<div class="ad-text">${esc(a.text)}</div>`:""}
+  <div class="actions"><button class="btn btn-pdf" onclick="downloadInvoiceById('${a.id}')">Invoice PDF</button><a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(a.customerPhone,msg)}">Customer WhatsApp</a>
+  ${contacts.adminPhone?`<a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(contacts.adminPhone,"PALAAR TV ADVT Invoice Details\\n"+msg)}">Admin WhatsApp</a>`:""}
+  ${contacts.mdPhone?`<a class="btn btn-wa" target="_blank" rel="noopener" href="${waLink(contacts.mdPhone,"PALAAR TV ADVT Invoice Details\\n"+msg)}">MD WhatsApp</a>`:""}
+  <button class="btn btn-secondary" onclick="editAd('${a.id}')">Edit</button><button class="btn btn-danger" onclick="deleteAd('${a.id}')">Delete</button></div></article>`;
+ }).join(""):'<div class="empty">இந்தப் பிரிவில் விளம்பரம் இல்லை.</div>';
+}
+window.downloadInvoiceById=id=>{const ad=ads.find(a=>a.id===id);if(ad)downloadInvoice(ad);};
+window.editAd=id=>{const a=ads.find(x=>x.id===id);if(!a)return;selectedCategory=a.category;document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("active",x.dataset.cat===selectedCategory));$("formTitle").textContent=selectedCategory+" – விளம்பரத்தைத் திருத்து";$("editId").value=a.id;$("adName").value=a.name;$("customerName").value=a.customerName;$("customerPhone").value=a.customerPhone;$("adText").value=a.text||"";$("startAt").value=a.startAt;$("endAt").value=a.endAt;updateTextField();window.scrollTo({top:0,behavior:"smooth"});};
+window.deleteAd=id=>{if(confirm("இந்த விளம்பரத்தை நீக்கவா?")){ads=ads.filter(a=>a.id!==id);save();}};
+updateTextField();render();
 </script>
 </body>
 </html>
