@@ -1,13 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="ta">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PALAAR TV - Advertisement Management</title>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root {
   --bg:#080b12;
@@ -112,66 +112,45 @@ textarea{min-height:75px}
  .form-grid{grid-template-columns:1fr}
 }
 </style>
+<style>
+#dashboard[hidden],#loginPanel[hidden]{display:none!important}
+.statusline{background:#10253a;color:#d8ebff;padding:10px;border-radius:8px;margin-top:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+</style>
 </head>
-
 <body>
-
-<header>
-<h2>PALAAR TV – ADVERTISEMENT MANAGEMENT</h2>
-<p>விளம்பர நிர்வாகம் | MEDIA SOLUTION</p>
-</header>
-
+<header><h2>PALAAR TV – ADVERTISEMENT MANAGEMENT</h2><p>விளம்பர நிர்வாகம் | MEDIA SOLUTION</p></header>
 <main>
-
-<div class="notice">
-<b>முக்கிய குறிப்பு:</b>
-விளம்பர விவரங்கள் இந்த Browser-ன் Local Storage-ல் சேமிக்கப்படும்.
-வேறு கணினியில் விவரங்களைப் பயன்படுத்த Database இணைப்பு தேவை.
-தினசரி Backup எடுப்பது நல்லது.
+<section class="panel" id="loginPanel">
+<h3>MD / Admin Login</h3>
+<p class="small">அங்கீகரிக்கப்பட்ட மொபைல் எண்ணுக்கு OTP அனுப்பப்படும்.</p>
+<div class="form-grid">
+<div><label>மொபைல் எண் (+91 உடன்)</label><input id="loginPhone" type="tel" placeholder="+919XXXXXXXXX"></div>
+<div><label>OTP</label><input id="otpCode" inputmode="numeric" placeholder="SMS OTP"></div>
 </div>
+<div class="form-actions"><button class="primary" id="sendOtpBtn" type="button">OTP அனுப்பு</button><button id="verifyOtpBtn" type="button">OTP சரிபார் / Login</button></div>
+<div id="recaptcha-container"></div><div id="loginStatus" class="statusline">உள்நுழைய அங்கீகரிக்கப்பட்ட மொபைல் எண்ணைப் பயன்படுத்தவும்.</div>
+</section>
 
-<!-- WHATSAPP CONTACTS -->
+<div id="dashboard" hidden>
+<div class="row" style="margin-bottom:12px"><span id="signedInAs" class="small"></span><button id="logoutBtn" type="button">Logout</button></div>
+<div class="notice"><b>முக்கிய குறிப்பு:</b> விளம்பர விவரங்கள் Firebase Firestore-ல் சேமிக்கப்படும். அங்கீகரிக்கப்பட்ட MD மற்றும் Admin ஒரே பதிவுகளைப் பார்க்கலாம்.</div>
 
 <section class="panel">
 <h3>நிரந்தர WhatsApp தொடர்பு எண்கள்</h3>
 <div class="form-grid">
-<div>
-<label>Admin WhatsApp Number</label>
-<input id="adminPhone" placeholder="91XXXXXXXXXX">
+<div><label>Admin WhatsApp Number (+91 உடன்)</label><input id="adminPhone" value="+917397039447" placeholder="+91XXXXXXXXXX"></div>
+<div><label>MD WhatsApp Number (+91 உடன்)</label><input id="mdPhone" value="+919003604301" placeholder="+91XXXXXXXXXX"></div>
 </div>
-<div>
-<label>MD WhatsApp Number</label>
-<input id="mdPhone" placeholder="91XXXXXXXXXX">
-</div>
-</div>
-<div class="form-actions">
-<button class="primary" onclick="saveContacts()">எண்களைச் சேமிக்க</button>
-</div>
+<div class="form-actions"><button class="primary" onclick="saveContacts()">எண்களைச் சேமிக்க</button></div>
 </section>
 
-<!-- MAIN COUNTS -->
-
 <div class="stats">
-<div class="stat">
-மொத்த விளம்பரங்கள்
-<strong id="totalCount">0</strong>
+<div class="stat">மொத்த விளம்பரங்கள்<strong id="totalCount">0</strong></div>
+<div class="stat">தற்போது Running<strong id="activeCount">0</strong></div>
+<div class="stat">காலாவதியானவை<strong id="expiredCount">0</strong></div>
 </div>
-<div class="stat">
-தற்போது Running
-<strong id="activeCount">0</strong>
-</div>
-<div class="stat">
-காலாவதியானவை
-<strong id="expiredCount">0</strong>
-</div>
-</div>
-
-<!-- CATEGORY COUNTS -->
-
 <div class="category-grid" id="categoryCounts"></div>
-
-<!-- CATEGORY TABS -->
-
 <div class="tabs" id="tabs">
 <button class="active" onclick="selectCategory('ALL',this)">ALL ADS</button>
 <button onclick="selectCategory('VISUAL AD',this)">VISUAL AD</button>
@@ -181,572 +160,139 @@ textarea{min-height:75px}
 <button onclick="selectCategory('SPECIAL PROGRAM AD',this)">SPECIAL PROGRAM AD</button>
 </div>
 
-<!-- ADD ADVERTISEMENT -->
-
 <section class="panel" id="formPanel">
 <h3 id="formTitle">புதிய விளம்பரம் சேர்க்க</h3>
-
-<form id="adForm">
-
-<input type="hidden" id="editId">
-
+<form id="adForm"><input type="hidden" id="editId">
 <div class="form-grid">
-
-<div>
-<label>Advertisement Category *</label>
-<select id="category" required>
-<option value="">Select Category</option>
-<option>VISUAL AD</option>
-<option>SCROLLING AD</option>
-<option>FLASH NEWS AD</option>
-<option>S-LOGO AD</option>
-<option>SPECIAL PROGRAM AD</option>
-</select>
+<div><label>Advertisement Category *</label><select id="category" required><option value="">Select Category</option><option>VISUAL AD</option><option>SCROLLING AD</option><option>FLASH NEWS AD</option><option>S-LOGO AD</option><option>SPECIAL PROGRAM AD</option></select></div>
+<div><label>Advertisement Name *</label><input id="name" required placeholder="விளம்பரத்தின் பெயர்"></div>
+<div><label>Customer Name *</label><input id="customerName" required placeholder="வாடிக்கையாளர் பெயர்"></div>
+<div><label>Customer WhatsApp Number *</label><input id="customerPhone" required placeholder="+91XXXXXXXXXX"></div>
+<div><label>Advertisement Start Date *</label><input type="date" id="startAt" required></div>
+<div><label>Advertisement End Date *</label><input type="date" id="endAt" required></div>
+<div style="grid-column:1/-1"><label>Advertisement Details</label><textarea id="details" placeholder="விளம்பர விவரங்கள்"></textarea></div>
 </div>
-
-<div>
-<label>Advertisement Name *</label>
-<input id="name" required placeholder="விளம்பரத்தின் பெயர்">
-</div>
-
-<div>
-<label>Customer Name *</label>
-<input id="customerName" required placeholder="வாடிக்கையாளர் பெயர்">
-</div>
-
-<div>
-<label>Customer WhatsApp Number *</label>
-<input id="customerPhone" required placeholder="91XXXXXXXXXX">
-</div>
-
-<div>
-<label>Advertisement Start Date *</label>
-<input type="date" id="startAt" required>
-</div>
-
-<div>
-<label>Advertisement End Date *</label>
-<input type="date" id="endAt" required>
-</div>
-
-<div>
-<label>Advertisement Amount (₹)</label>
-<input type="number" id="amount" min="0" placeholder="0">
-</div>
-
-<div>
-<label>Invoice Number</label>
-<input id="invoiceNumber" placeholder="Auto Generated" readonly>
-</div>
-
-<div style="grid-column:1/-1">
-<label>Advertisement Details</label>
-<textarea id="details" placeholder="விளம்பர விவரங்கள்"></textarea>
-</div>
-
-</div>
-
-<div class="form-actions">
-<button type="submit" class="primary" id="saveBtn">விளம்பரத்தைச் சேமிக்க</button>
-<button type="button" onclick="resetForm()">புதிய விளம்பரம்</button>
-</div>
-
+<div class="form-actions"><button type="submit" class="primary" id="saveBtn">விளம்பரத்தைச் சேமிக்க</button><button type="button" onclick="resetForm()">புதிய விளம்பரம்</button></div>
 </form>
 </section>
-
-<!-- ADVERTISEMENT LIST -->
-
-<section class="panel">
-<h3 id="listTitle">அனைத்து விளம்பரங்களின் விவரம்</h3>
-<div id="adList"></div>
-</section>
-
+<section class="panel"><h3 id="listTitle">அனைத்து விளம்பரங்களின் விவரம்</h3><div id="adList"></div></section>
+</div>
 </main>
 
 <script>
+const firebaseConfig = {
+ apiKey: "AIzaSyDaulig4k-0q0ZCTZbIovL1Mx84iU4oXfo",
+ authDomain: "palaar-tv-advt.firebaseapp.com",
+ projectId: "palaar-tv-advt",
+ storageBucket: "palaar-tv-advt.firebasestorage.app",
+ messagingSenderId: "234087942680",
+ appId: "1:234087942680:web:3782c8b7934fc8a685916d"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
+let ads=[],selectedCategory="ALL",confirmation=null,unsubscribeAds=null,recaptcha=null;
 
-const STORAGE_KEY = "palaartv_ads_v2";
-const CONTACT_KEY = "palaartv_contacts_v2";
+function $(id){return document.getElementById(id)}
+function statusMessage(t){$("loginStatus").textContent=t}
+function normalizePhone(v){let s=String(v||"").trim().replace(/[^\d+]/g,"");if(s.startsWith("00"))s="+"+s.slice(2);if(!s.startsWith("+")&&s.length===10)s="+91"+s;return s}
+function parseDate(v){const p=v.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function todayDate(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function dateFormat(v){if(!v)return"-";const p=v.split("-");return `${p[2]}-${p[1]}-${p[0]}`}
+function dayDiff(a,b){return Math.round((b-a)/86400000)}
+function getStats(a){const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt),total=dayDiff(st,en)+1,elapsed=Math.max(0,Math.min(total,dayDiff(st,t)+1)),remaining=Math.max(0,dayDiff(t,en));let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";return{total,elapsed,remaining,status}}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function generateInvoice(){return"PTV-"+Date.now().toString().slice(-9)}
+function normalizeId(phone){return phone}
+function setDashboard(show){$("loginPanel").hidden=show;$("dashboard").hidden=!show}
+function getRecaptcha(){if(!recaptcha)recaptcha=new firebase.auth.RecaptchaVerifier("recaptcha-container",{size:"normal"});return recaptcha}
 
-const categories = [
-"VISUAL AD",
-"SCROLLING AD",
-"FLASH NEWS AD",
-"S-LOGO AD",
-"SPECIAL PROGRAM AD"
-];
+$("sendOtpBtn").onclick=async()=>{try{const phone=normalizePhone($("loginPhone").value);if(!/^\+\d{10,15}$/.test(phone)){statusMessage("சரியான மொபைல் எண்ணை +91 உடன் உள்ளிடுங்கள்.");return}confirmation=await auth.signInWithPhoneNumber(phone,getRecaptcha());statusMessage("OTP அனுப்பப்பட்டது. SMS-ல் வந்த OTP-ஐ உள்ளிடுங்கள்.");}catch(e){statusMessage("OTP அனுப்ப முடியவில்லை: "+e.message);if(recaptcha){recaptcha.clear();recaptcha=null}}};
+$("verifyOtpBtn").onclick=async()=>{try{if(!confirmation){statusMessage("முதலில் OTP அனுப்பு என்பதை அழுத்துங்கள்.");return}await confirmation.confirm($("otpCode").value.trim());}catch(e){statusMessage("OTP சரிபார்ப்பு தோல்வி: "+e.message)}};
+$("logoutBtn").onclick=()=>auth.signOut();
 
-let ads = [];
-let selectedCategory = "ALL";
-
-// DATE FORMAT
-
-function parseDate(value){
- const p = value.split("-");
- return new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
-}
-
-function todayDate(){
- const d = new Date();
- return new Date(d.getFullYear(),d.getMonth(),d.getDate());
-}
-
-function dateFormat(value){
- if(!value)return "-";
- const p=value.split("-");
- return `${p[2]}-${p[1]}-${p[0]}`;
-}
-
-function dayDiff(a,b){
- return Math.round((b-a)/86400000);
-}
-
-function getStats(ad){
- const today=todayDate();
- const start=parseDate(ad.startAt);
- const end=parseDate(ad.endAt);
-
- const total=dayDiff(start,end)+1;
- const elapsed=Math.max(0,Math.min(total,dayDiff(start,today)+1));
- const remaining=Math.max(0,dayDiff(today,end));
-
- let status="RUNNING";
-
- if(today<start)status="UPCOMING";
- else if(today>end)status="EXPIRED";
-
- return {total,elapsed,remaining,status};
-}
-
-function esc(value){
- return String(value??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",
- '"':"&quot;","'":"&#39;"
- })[c]);
-}
-
-// LOAD DATA
-
-function loadData(){
+auth.onAuthStateChanged(async user=>{
+ if(!user){setDashboard(false);if(unsubscribeAds){unsubscribeAds();unsubscribeAds=null}return}
  try{
-  const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-  ads=Array.isArray(saved)?saved:[];
- }catch(e){ads=[];}
-
- // Attempt to recover older compatible browser data.
- if(!ads.length){
-  for(let i=0;i<localStorage.length;i++){
-   const key=localStorage.key(i);
-   if(!key || key===STORAGE_KEY)continue;
-   try{
-    const old=JSON.parse(localStorage.getItem(key));
-    if(Array.isArray(old) && old.some(a=>a && a.startAt && a.endAt && a.category)){
-     ads=old;
-     saveData();
-     break;
-    }
-   }catch(e){}
-  }
- }
-}
-
-function saveData(){
- localStorage.setItem(STORAGE_KEY,JSON.stringify(ads));
- render();
-}
-
-// CONTACTS
-
-function loadContacts(){
- const c=JSON.parse(localStorage.getItem(CONTACT_KEY)||"{}");
- document.getElementById("adminPhone").value=c.admin||"917397039447";
- document.getElementById("mdPhone").value=c.md||"919003604301";
-}
-
-function saveContacts(){
- const c={
- admin:document.getElementById("adminPhone").value.trim(),
- md:document.getElementById("mdPhone").value.trim()
- };
- localStorage.setItem(CONTACT_KEY,JSON.stringify(c));
- alert("WhatsApp எண்கள் சேமிக்கப்பட்டன.");
-}
-
-function getContacts(){
- return JSON.parse(localStorage.getItem(CONTACT_KEY)||"{}");
-}
-
-// INVOICE NUMBER
-
-function generateInvoice(){
- return "PTV-"+Date.now().toString().slice(-9);
-}
-
-// ADD / EDIT
-
-document.getElementById("adForm").addEventListener("submit",function(e){
- e.preventDefault();
-
- const id=document.getElementById("editId").value;
-
- const ad={
-  id:id||String(Date.now()),
-  category:document.getElementById("category").value,
-  name:document.getElementById("name").value.trim(),
-  customerName:document.getElementById("customerName").value.trim(),
-  customerPhone:document.getElementById("customerPhone").value.trim(),
-  startAt:document.getElementById("startAt").value,
-  endAt:document.getElementById("endAt").value,
-  amount:Number(document.getElementById("amount").value||0),
-  invoiceNumber:document.getElementById("invoiceNumber").value||generateInvoice(),
-  details:document.getElementById("details").value.trim()
- };
-
- if(parseDate(ad.endAt)<parseDate(ad.startAt)){
-  alert("முடியும் தேதி தொடங்கும் தேதிக்கு முன்பாக இருக்கக்கூடாது.");
-  return;
- }
-
- if(!/^\d{10,15}$/.test(ad.customerPhone.replace(/\D/g,""))){
-  alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");
-  return;
- }
-
- if(id){
-  const index=ads.findIndex(a=>a.id===id);
-  if(index>=0)ads[index]=ad;
- }else{
-  ads.push(ad);
- }
-
- saveData();
- resetForm();
- alert("விளம்பர விவரங்கள் வெற்றிகரமாக சேமிக்கப்பட்டன.");
+  const allowed=await db.collection("authorizedUsers").doc(user.phoneNumber).get();
+  if(!allowed.exists){await auth.signOut();statusMessage("இந்த மொபைல் எண் MD/Admin அனுமதி பட்டியலில் இல்லை.");return}
+  $("signedInAs").textContent="Login: "+user.phoneNumber+" | Role: "+(allowed.data().role||"Staff");
+  await migrateOldBrowserData();
+  setDashboard(true);loadContacts();listenAds();
+ }catch(e){await auth.signOut();statusMessage("அனுமதி சரிபார்க்க முடியவில்லை: "+e.message)}
 });
 
-function resetForm(){
- document.getElementById("adForm").reset();
- document.getElementById("editId").value="";
- document.getElementById("invoiceNumber").value="";
- document.getElementById("formTitle").textContent="புதிய விளம்பரம் சேர்க்க";
- document.getElementById("saveBtn").textContent="விளம்பரத்தைச் சேமிக்க";
-}
-
-function editAd(id){
- const a=ads.find(x=>x.id===id);
- if(!a)return;
-
- document.getElementById("editId").value=a.id;
- document.getElementById("category").value=a.category;
- document.getElementById("name").value=a.name;
- document.getElementById("customerName").value=a.customerName;
- document.getElementById("customerPhone").value=a.customerPhone;
- document.getElementById("startAt").value=a.startAt;
- document.getElementById("endAt").value=a.endAt;
- document.getElementById("amount").value=a.amount;
- document.getElementById("invoiceNumber").value=a.invoiceNumber;
- document.getElementById("details").value=a.details||"";
-
- document.getElementById("formTitle").textContent="விளம்பரத்தைத் திருத்துக";
- document.getElementById("saveBtn").textContent="மாற்றங்களைச் சேமிக்க";
-
- document.getElementById("formPanel").scrollIntoView({behavior:"smooth"});
-}
-
-function deleteAd(id){
- if(!confirm("இந்த விளம்பரத்தை நீக்க வேண்டுமா?"))return;
- ads=ads.filter(a=>a.id!==id);
- saveData();
-}
-
-// CATEGORY FILTER
-
-function selectCategory(cat,btn){
- selectedCategory=cat;
- document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
- render();
-}
-
-// WHATSAPP
-
-function waLink(phone,message){
- const number=String(phone||"").replace(/\D/g,"");
- if(number.length<10){
-  alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");
-  return;
- }
- window.open("https://wa.me/"+number+"?text="+encodeURIComponent(message),"_blank");
-}
-
-function invoiceMessage(a){
- const s=getStats(a);
- return `PALAAR TV - ADVERTISEMENT INVOICE
-Invoice: ${a.invoiceNumber}
-Customer: ${a.customerName}
-Advertisement: ${a.name}
-Category: ${a.category}
-Start Date: ${dateFormat(a.startAt)}
-End Date: ${dateFormat(a.endAt)}
-Total Days: ${s.total}
-Elapsed Days: ${s.elapsed}
-Remaining Days: ${s.remaining}
-Amount: Rs.${a.amount}
-PALAAR TV, Ranipet`;
-}
-
-function sendWhatsApp(id,type){
- const a=ads.find(x=>x.id===id);
- if(!a)return;
-
- const c=getContacts();
- let phone="";
-
- if(type==="customer")phone=a.customerPhone;
- if(type==="admin")phone=c.admin;
- if(type==="md")phone=c.md;
-
- waLink(phone,invoiceMessage(a));
-}
-
-// PDF INVOICE
-
-async function downloadInvoice(id){
- const a=ads.find(x=>x.id===id);
- if(!a)return;
-
- if(!window.jspdf){
-  alert("PDF Library ஏற்றப்படவில்லை. Internet இணைப்பைச் சரிபார்க்கவும்.");
-  return;
- }
-
- const {jsPDF}=window.jspdf;
- const pdf=new jsPDF();
- const s=getStats(a);
-
- // HEADER
- pdf.setFillColor(17,24,39);
- pdf.rect(0,0,210,40,"F");
-
- // PALAAR TV LOGO
+function listenAds(){if(unsubscribeAds)unsubscribeAds();unsubscribeAds=db.collection("advertisements").onSnapshot(snap=>{ads=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.recordType!=="system");render()},e=>alert("Firebase தரவைப் பெற முடியவில்லை: "+e.message))}
+async function migrateOldBrowserData(){
+ const doneKey="palaartv_firebase_migration_v1";
+ if(localStorage.getItem(doneKey)==="done")return;
+ const oldAdsKey="palaartv_ads_v2",oldContactsKey="palaartv_contacts_v2";
+ let oldAds=[];
+ try{const parsed=JSON.parse(localStorage.getItem(oldAdsKey)||"[]");if(Array.isArray(parsed))oldAds=parsed;}catch(e){}
  try{
-  const logo=await loadImage("palaartv-logo.png");
-  pdf.addImage(logo,"PNG",12,7,30,23);
- }catch(e){}
-
- pdf.setTextColor(255,201,64);
- pdf.setFontSize(23);
- pdf.text("PALAAR TV",50,18);
-
- pdf.setTextColor(255,255,255);
- pdf.setFontSize(10);
- pdf.text("ADVERTISEMENT INVOICE",50,27);
- pdf.text("MEDIA SOLUTION",50,34);
-
- pdf.setTextColor(20,20,20);
- pdf.setFontSize(15);
- pdf.text("ADVERTISEMENT INVOICE",14,53);
-
- pdf.setFontSize(10);
- pdf.text("Invoice No: "+a.invoiceNumber,14,64);
- pdf.text("Invoice Date: "+dateFormat(new Date().toISOString().slice(0,10)),14,71);
-
- pdf.setDrawColor(200,160,50);
- pdf.line(14,78,196,78);
-
- pdf.setFontSize(11);
- pdf.text("CUSTOMER DETAILS",14,91);
-
- pdf.setFontSize(10);
- pdf.text("Customer Name: "+a.customerName,14,101);
- pdf.text("WhatsApp Number: "+a.customerPhone,14,109);
-
- pdf.text("ADVERTISEMENT DETAILS",14,125);
-
- const rows=[
-  ["Advertisement Name",a.name],
-  ["Category",a.category],
-  ["Start Date",dateFormat(a.startAt)],
-  ["End Date",dateFormat(a.endAt)],
-  ["Total Advertisement Days",s.total+" Days"],
-  ["Days Completed",s.elapsed+" Days"],
-  ["Remaining Days",s.remaining+" Days"],
-  ["Advertisement Status",s.status],
-  ["Advertisement Amount","Rs. "+Number(a.amount).toFixed(2)]
- ];
-
- let y=136;
-
- rows.forEach(row=>{
-  pdf.setFont(undefined,"bold");
-  pdf.text(row[0]+":",15,y);
-  pdf.setFont(undefined,"normal");
-  const lines=pdf.splitTextToSize(String(row[1]),100);
-  pdf.text(lines,85,y);
-  y+=Math.max(9,lines.length*6);
- });
-
- y+=8;
- pdf.line(14,y,196,y);
- y+=12;
-
- pdf.setFontSize(10);
- pdf.setFont(undefined,"bold");
- pdf.text("PALAAR TV",14,y);
- y+=7;
-
- pdf.setFont(undefined,"normal");
- const address=[
-  "No.44, Gandhi Nagar, Vaalakarai Amman Kovil (Opp),",
-  "Ranipet - 632 401.",
-  "Cell: 900 360 430 1."
- ];
-
- address.forEach(line=>{
-  pdf.text(line,14,y);
-  y+=6;
- });
-
- y+=8;
- pdf.setFontSize(9);
- pdf.setTextColor(100,100,100);
- pdf.text("Thank you for advertising with PALAAR TV.",14,y);
-
- pdf.save(a.invoiceNumber+".pdf");
+  for(const old of oldAds){
+   if(!old||!old.category||!old.startAt||!old.endAt)continue;
+   const legacyId=String(old.id||generateInvoice()).replace(/[^a-zA-Z0-9_-]/g,"_");
+   const ref=db.collection("advertisements").doc("legacy_"+legacyId);
+   const exists=await ref.get();
+   if(exists.exists)continue;
+   await ref.set({category:old.category,name:old.name||"",customerName:old.customerName||"",customerPhone:normalizePhone(old.customerPhone||""),startAt:old.startAt,endAt:old.endAt,details:old.details||"",invoiceNumber:old.invoiceNumber||generateInvoice(),createdAt:old.createdAt||Date.now(),updatedAt:Date.now(),migratedFromLocalStorage:true});
+  }
+  try{const c=JSON.parse(localStorage.getItem(oldContactsKey)||"{}");if(c&&Object.keys(c).length){await db.collection("settings").doc("whatsappContacts").set({admin:normalizePhone(c.admin||"+917397039447"),md:normalizePhone(c.md||"+919003604301")},{merge:true})}}catch(e){}
+  localStorage.setItem(doneKey,"done");
+ }catch(e){console.error("Legacy data migration:",e);statusMessage("பழைய விளம்பரத் தரவை மாற்ற முடியவில்லை: "+e.message)}
 }
+async function loadContacts(){try{const d=await db.collection("settings").doc("whatsappContacts").get(),c=d.exists?d.data():{};$("adminPhone").value=c.admin||"+917397039447";$("mdPhone").value=c.md||"+919003604301"}catch(e){console.error(e)}}
+async function saveContacts(){try{await db.collection("settings").doc("whatsappContacts").set({admin:normalizePhone($("adminPhone").value),md:normalizePhone($("mdPhone").value)});alert("WhatsApp எண்கள் சேமிக்கப்பட்டன.")}catch(e){alert("சேமிக்க முடியவில்லை: "+e.message)}}
 
-function loadImage(src){
- return new Promise((resolve,reject)=>{
-  const img=new Image();
-  img.onload=()=>{
-   const canvas=document.createElement("canvas");
-   canvas.width=img.naturalWidth;
-   canvas.height=img.naturalHeight;
-   canvas.getContext("2d").drawImage(img,0,0);
-   resolve(canvas.toDataURL("image/png"));
-  };
-  img.onerror=reject;
-  img.src=src;
- });
+$("adForm").addEventListener("submit",async e=>{
+ e.preventDefault();const id=$("editId").value;
+ const a={category:$("category").value,name:$("name").value.trim(),customerName:$("customerName").value.trim(),customerPhone:normalizePhone($("customerPhone").value),startAt:$("startAt").value,endAt:$("endAt").value,details:$("details").value.trim(),updatedAt:Date.now()};
+ if(!a.startAt||!a.endAt||parseDate(a.endAt)<parseDate(a.startAt)){alert("முடியும் தேதி தொடங்கும் தேதிக்கு முன்பாக இருக்கக்கூடாது.");return}
+ if(!/^\+\d{10,15}$/.test(a.customerPhone)){alert("சரியான WhatsApp எண்ணை +91 உடன் உள்ளிடவும்.");return}
+ try{
+  if(id){const old=ads.find(x=>x.id===id);a.invoiceNumber=old?.invoiceNumber||generateInvoice();a.createdAt=old?.createdAt||Date.now();await db.collection("advertisements").doc(id).set(a)}
+  else{a.invoiceNumber=generateInvoice();a.createdAt=Date.now();await db.collection("advertisements").add(a)}
+  resetForm();alert("விளம்பர விவரங்கள் Firebase-ல் சேமிக்கப்பட்டன.")
+ }catch(err){alert("சேமிக்க முடியவில்லை: "+err.message)}
+});
+function resetForm(){$("adForm").reset();$("editId").value="";$("formTitle").textContent="புதிய விளம்பரம் சேர்க்க";$("saveBtn").textContent="விளம்பரத்தைச் சேமிக்க"}
+function editAd(id){const a=ads.find(x=>x.id===id);if(!a)return;$("editId").value=a.id;$("category").value=a.category;$("name").value=a.name;$("customerName").value=a.customerName;$("customerPhone").value=a.customerPhone;$("startAt").value=a.startAt;$("endAt").value=a.endAt;$("details").value=a.details||"";$("formTitle").textContent="விளம்பரத்தைத் திருத்துக";$("saveBtn").textContent="மாற்றங்களைச் சேமிக்க";$("formPanel").scrollIntoView({behavior:"smooth"})}
+async function deleteAd(id){if(!confirm("இந்த விளம்பரத்தை நீக்க வேண்டுமா?"))return;try{await db.collection("advertisements").doc(id).delete()}catch(e){alert("நீக்க முடியவில்லை: "+e.message)}}
+function selectCategory(cat,btn){selectedCategory=cat;document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");render()}
+function getContacts(){return{admin:$("adminPhone").value.trim(),md:$("mdPhone").value.trim()}}
+function invoiceMessage(a){const s=getStats(a);return`PALAAR TV - ADVERTISEMENT INVOICE\nInvoice: ${a.invoiceNumber}\nCustomer: ${a.customerName}\nMobile: ${a.customerPhone}\nAdvertisement: ${a.name}\nCategory: ${a.category}\nStart Date: ${dateFormat(a.startAt)}\nEnd Date: ${dateFormat(a.endAt)}\nTotal Days: ${s.total}\nElapsed Days: ${s.elapsed}\nRemaining Days: ${s.remaining}\nPalaar Tv, No.44, Gandhi Nagar, Vaalakarai Amman Kovil ( Opp ), Ranipet - 632 401. Cell : 900 360 430 1.`}
+function waLink(phone,msg){const n=String(phone||"").replace(/\D/g,"");if(n.length<10){alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");return}window.open("https://wa.me/"+n+"?text="+encodeURIComponent(msg),"_blank")}
+function sendWhatsApp(id,type){const a=ads.find(x=>x.id===id);if(!a)return;const c=getContacts();waLink(type==="customer"?a.customerPhone:type==="md"?c.md:c.admin,invoiceMessage(a))}
+function loadImage(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext("2d").drawImage(img,0,0);resolve(c.toDataURL("image/png"))};img.onerror=reject;img.src=src})}
+async function downloadInvoice(id){
+ const a=ads.find(x=>x.id===id);if(!a)return;if(!window.jspdf){alert("PDF Library ஏற்றப்படவில்லை.");return}
+ const{jsPDF}=window.jspdf,pdf=new jsPDF(),s=getStats(a);
+ pdf.setFillColor(17,24,39);pdf.rect(0,0,210,40,"F");
+ try{const logo=await loadImage("palaartv-logo.png");pdf.addImage(logo,"PNG",12,7,30,23)}catch(e){}
+ pdf.setTextColor(255,201,64);pdf.setFontSize(23);pdf.text("PALAAR TV",50,18);pdf.setTextColor(255,255,255);pdf.setFontSize(10);pdf.text("ADVERTISEMENT INVOICE",50,27);pdf.text("MEDIA SOLUTION",50,34);
+ pdf.setTextColor(20,20,20);pdf.setFontSize(15);pdf.text("ADVERTISEMENT INVOICE",14,53);pdf.setFontSize(10);pdf.text("Invoice No: "+a.invoiceNumber,14,64);pdf.text("Invoice Date: "+dateFormat(new Date().toISOString().slice(0,10)),14,71);pdf.setDrawColor(200,160,50);pdf.line(14,78,196,78);
+ pdf.setFontSize(11);pdf.text("CUSTOMER DETAILS",14,91);pdf.setFontSize(10);pdf.text("Customer Name: "+a.customerName,14,101);pdf.text("Mobile Number: "+a.customerPhone,14,109);pdf.text("ADVERTISEMENT DETAILS",14,125);
+ const rows=[["Advertisement Name",a.name],["Category",a.category],["Start Date",dateFormat(a.startAt)],["End Date",dateFormat(a.endAt)],["Total Advertisement Days",s.total+" Days"],["Days Completed",s.elapsed+" Days"],["Remaining Days",s.remaining+" Days"],["Advertisement Status",s.status]];
+ let y=136;rows.forEach(r=>{pdf.setFont(undefined,"bold");pdf.text(r[0]+":",15,y);pdf.setFont(undefined,"normal");pdf.text(pdf.splitTextToSize(String(r[1]),100),85,y);y+=8});
+ y+=8;pdf.line(14,y,196,y);y+=12;pdf.setFontSize(10);pdf.setFont(undefined,"bold");pdf.text("PALAAR TV",14,y);y+=7;pdf.setFont(undefined,"normal");
+ ["No.44, Gandhi Nagar, Vaalakarai Amman Kovil ( Opp ),","Ranipet - 632 401.","Cell : 900 360 430 1."].forEach(line=>{pdf.text(line,14,y);y+=6});
+ pdf.save(a.invoiceNumber+".pdf")
 }
-
-// DASHBOARD RENDER
-
 function render(){
-
- const today=todayDate();
-
- const active=ads.filter(a=>getStats(a).status==="RUNNING").length;
- const expired=ads.filter(a=>getStats(a).status==="EXPIRED").length;
-
- document.getElementById("totalCount").textContent=ads.length;
- document.getElementById("activeCount").textContent=active;
- document.getElementById("expiredCount").textContent=expired;
-
- // CATEGORY COUNTS
-
- document.getElementById("categoryCounts").innerHTML=
- categories.map(c=>{
-  const count=ads.filter(a=>
-   a.category===c && getStats(a).status==="RUNNING"
-  ).length;
-
-  return `
-  <div class="category-count">
-   <b>${esc(c)}</b>
-   <strong>${count}</strong>
-   <span class="small">Running Ads</span>
-  </div>`;
- }).join("");
-
- // ADVERTISEMENT LIST
-
- const filtered=selectedCategory==="ALL"
- ?ads
- :ads.filter(a=>a.category===selectedCategory);
-
- document.getElementById("listTitle").textContent=
- selectedCategory==="ALL"
- ?"அனைத்து விளம்பரங்களின் விவரம்"
- :selectedCategory+" - Running / Expired Ads";
-
- const list=document.getElementById("adList");
-
- if(!filtered.length){
-  list.innerHTML='<div class="empty">இந்த பிரிவில் விளம்பரங்கள் இல்லை.</div>';
-  return;
- }
-
- list.innerHTML=filtered
- .slice()
- .sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt))
- .map(a=>{
-
-  const s=getStats(a);
-  const cls=s.status==="RUNNING"?"running":
-  s.status==="EXPIRED"?"expired":"upcoming";
-
-  return `
-  <article class="ad-card">
-
-   <div class="ad-top">
-    <h3>${esc(a.name)}</h3>
-    <span class="badge ${cls}">${s.status}</span>
-   </div>
-
-   <div class="ad-meta">
-    <b>Category:</b> ${esc(a.category)}<br>
-    <b>Customer:</b> ${esc(a.customerName)}<br>
-    <b>Mobile:</b> ${esc(a.customerPhone)}<br>
-    <b>Start Date:</b> ${dateFormat(a.startAt)}<br>
-    <b>End Date:</b> ${dateFormat(a.endAt)}<br>
-    <b>Total Days:</b> ${s.total} Days<br>
-    <b>Elapsed Days:</b> ${s.elapsed} Days<br>
-    <b>Remaining Days:</b>
-    <strong style="color:${s.remaining>0?'#20c879':'#ff7777'}">
-    ${s.remaining} Days</strong><br>
-    <b>Amount:</b> ₹${Number(a.amount||0).toFixed(2)}<br>
-    <b>Invoice:</b> ${esc(a.invoiceNumber)}
-    ${a.details?'<br><b>Details:</b> '+esc(a.details):''}
-   </div>
-
-   <div class="ad-actions">
-
-    <button class="pdf" onclick="downloadInvoice('${a.id}')">
-     PDF Invoice
-    </button>
-
-    <button class="whatsapp" onclick="sendWhatsApp('${a.id}','customer')">
-     Customer WhatsApp
-    </button>
-
-    <button class="whatsapp" onclick="sendWhatsApp('${a.id}','md')">
-     MD WhatsApp
-    </button>
-
-    <button class="whatsapp" onclick="sendWhatsApp('${a.id}','admin')">
-     Admin WhatsApp
-    </button>
-
-    <button onclick="editAd('${a.id}')">
-     Edit
-    </button>
-
-    <button class="danger" onclick="deleteAd('${a.id}')">
-     Delete
-    </button>
-
-   </div>
-  </article>`;
- }).join("");
+ const active=ads.filter(a=>getStats(a).status==="RUNNING").length,expired=ads.filter(a=>getStats(a).status==="EXPIRED").length;
+ $("totalCount").textContent=ads.length;$("activeCount").textContent=active;$("expiredCount").textContent=expired;
+ $("categoryCounts").innerHTML=categories.map(c=>{const n=ads.filter(a=>a.category===c&&getStats(a).status==="RUNNING").length;return`<div class="category-count"><b>${esc(c)}</b><strong>${n}</strong><span class="small">Running Ads</span></div>`}).join("");
+ const filtered=selectedCategory==="ALL"?ads:ads.filter(a=>a.category===selectedCategory);
+ $("listTitle").textContent=selectedCategory==="ALL"?"அனைத்து விளம்பரங்களின் விவரம்":selectedCategory+" - Running / Expired Ads";
+ if(!filtered.length){$("adList").innerHTML='<div class="empty">இந்த பிரிவில் விளம்பரங்கள் இல்லை.</div>';return}
+ $("adList").innerHTML=filtered.slice().sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt)).map(a=>{
+ const s=getStats(a),cls=s.status==="RUNNING"?"running":s.status==="EXPIRED"?"expired":"upcoming";
+ return`<article class="ad-card"><div class="ad-top"><h3>${esc(a.name)}</h3><span class="badge ${cls}">${s.status}</span></div>
+ <div class="ad-meta"><b>Category:</b> ${esc(a.category)}<br><b>Customer:</b> ${esc(a.customerName)}<br><b>Mobile:</b> ${esc(a.customerPhone)}<br><b>Start Date:</b> ${dateFormat(a.startAt)}<br><b>End Date:</b> ${dateFormat(a.endAt)}<br><b>Total Days:</b> ${s.total} Days<br><b>Elapsed Days:</b> ${s.elapsed} Days<br><b>Remaining Days:</b> <strong style="color:${s.remaining>0?'#20c879':'#ff7777'}">${s.remaining} Days</strong><br><b>Invoice:</b> ${esc(a.invoiceNumber)}${a.details?'<br><b>Details:</b> '+esc(a.details):''}</div>
+ <div class="ad-actions"><button class="pdf" onclick="downloadInvoice('${a.id}')">PDF Invoice</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','customer')">Customer WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','md')">MD WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','admin')">Admin WhatsApp</button><button onclick="editAd('${a.id}')">Edit</button><button class="danger" onclick="deleteAd('${a.id}')">Delete</button></div></article>`
+ }).join("")
 }
-
-// START
-
-loadData();
-loadContacts();
-render();
-
 </script>
 </body>
 </html>
