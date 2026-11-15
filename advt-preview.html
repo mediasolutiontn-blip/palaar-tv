@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,8 +27,13 @@ button.active{background:var(--gold);color:#111}
 .category b{display:block;color:var(--gold);font-size:12px}
 .category strong{display:block;font-size:26px;margin-top:7px}
 .ad-card{background:#111a29;border:1px solid #34445e;border-radius:10px;padding:17px;margin-bottom:12px}
-.ad-card h3{margin:0 0 12px;color:var(--gold)}
+.ad-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ad-card h3{margin:0;color:var(--gold)}
 .meta{color:#d3dbea;line-height:1.9;font-size:14px}
+.badge{display:inline-block;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:.4px}
+.badge.running{background:#e32636;color:#fff;border:1px solid #ff6570}
+.badge.expired{background:#4b5563;color:#fff;border:1px solid #9ca3af}
+.badge.upcoming{background:#66501b;color:#ffe28a;border:1px solid #b18a2b}
 .empty,.status{background:var(--panel);border-radius:10px;padding:18px;color:var(--muted);text-align:center}
 .status{margin-bottom:16px;text-align:left}
 @media(max-width:760px){.stats{grid-template-columns:1fr}.category-grid{grid-template-columns:repeat(2,1fr)}}
@@ -66,14 +72,31 @@ const auth=firebase.auth(), db=firebase.firestore();
 const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
 let allAds=[],selectedChannel="PALAAR TV";
 const $=id=>document.getElementById(id);
-function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function parseDate(v){const p=String(v||"").split("-");return new Date(+p[0],+p[1]-1,+p[2])}
-function todayDate(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
-function dateFormat(v){if(!v)return"-";const p=v.split("-");return `${p[2]}-${p[1]}-${p[0]}`}
-function dayDiff(a,b){return Math.round((b-a)/86400000)}
+
+function esc(v){
+ return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function parseDate(v){
+ const p=String(v||"").split("-");
+ return new Date(+p[0],+p[1]-1,+p[2]);
+}
+function todayDate(){
+ const d=new Date();
+ return new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+function dateFormat(v){
+ if(!v)return"-";
+ const p=v.split("-");
+ return `${p[2]}-${p[1]}-${p[0]}`;
+}
+function dayDiff(a,b){
+ return Math.round((b-a)/86400000);
+}
 function getStats(a){
  const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt);
- let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";
+ let status="RUNNING";
+ if(t<st)status="UPCOMING";
+ else if(t>en)status="EXPIRED";
  return{remaining:Math.max(0,dayDiff(t,en)),status};
 }
 function durationLabel(a){
@@ -94,22 +117,33 @@ function render(){
  $("totalCount").textContent=channelAds.length;
  $("activeCount").textContent=active;
  $("expiredCount").textContent=expired;
+
  $("categoryCounts").innerHTML=categories.map(c=>{
   const n=channelAds.filter(a=>a.category===c&&getStats(a).status==="RUNNING").length;
   return `<div class="category"><b>${esc(c)}</b><strong>${n}</strong><span>Running Ads</span></div>`;
  }).join("");
+
  const visible=channelAds.slice().sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt));
- if(!visible.length){$("adList").innerHTML='<div class="empty">இந்த சேனலில் தற்போது விளம்பரங்கள் இல்லை.</div>';return}
+ if(!visible.length){
+  $("adList").innerHTML='<div class="empty">இந்த சேனலில் தற்போது விளம்பரங்கள் இல்லை.</div>';
+  return;
+ }
+
  $("adList").innerHTML=visible.map(a=>{
   const s=getStats(a);
-  return `<article class="ad-card"><h3>${esc(a.name||"விளம்பரம்")}</h3>
-  <div class="meta"><b>Category:</b> ${esc(a.category)}<br>
-  <b>Duration:</b> ${esc(durationLabel(a))}<br>
-  <b>Start Date:</b> ${dateFormat(a.startAt)}<br>
-  <b>End Date:</b> ${dateFormat(a.endAt)}<br>
-  <b>Remaining Days:</b> ${s.remaining} Days<br>
-  <b>Contact Number:</b> ${esc(a.customerPhone||"-")}<br>
-  <b>Status:</b> ${s.status}</div></article>`;
+  const statusClass=s.status==="RUNNING"?"running":s.status==="EXPIRED"?"expired":"upcoming";
+  return `<article class="ad-card">
+   <div class="ad-top">
+    <h3>${esc(a.name||"விளம்பரம்")}</h3>
+    <span class="badge ${statusClass}">${s.status}</span>
+   </div>
+   <div class="meta"><b>Category:</b> ${esc(a.category)}<br>
+   <b>Duration:</b> ${esc(durationLabel(a))}<br>
+   <b>Start Date:</b> ${dateFormat(a.startAt)}<br>
+   <b>End Date:</b> ${dateFormat(a.endAt)}<br>
+   <b>Remaining Days:</b> ${s.remaining} Days<br>
+   <b>Contact Number:</b> ${esc(a.customerPhone||"-")}</div>
+  </article>`;
  }).join("");
 }
 auth.signInAnonymously().then(()=>{
@@ -117,7 +151,9 @@ auth.signInAnonymously().then(()=>{
   allAds=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.recordType!=="system");
   $("status").textContent="விளம்பர விவரங்கள் புதுப்பிக்கப்பட்டுள்ளன.";
   render();
- },err=>{$("status").textContent="விளம்பர விவரங்களைப் பெற முடியவில்லை: "+err.message});
+ },err=>{
+  $("status").textContent="விளம்பர விவரங்களைப் பெற முடியவில்லை: "+err.message;
+ });
 }).catch(err=>{
  $("status").textContent="Firebase Anonymous Authentication / Firestore Read அனுமதி சரிபார்க்கப்பட வேண்டும்: "+err.message;
 });
