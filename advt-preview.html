@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PALAAR TV – ADVERTISEMENT PREVIEW</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#080b12;--panel:#151e2e;--card:#202e43;--gold:#ffc940;--text:#f5f7fb;--muted:#aebbd0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+header{padding:22px 5%;background:#111827;border-bottom:2px solid var(--gold)}
+header h1{margin:0;color:var(--gold);font-size:clamp(22px,3vw,30px)}
+header p{margin:8px 0 0;color:#b7c8e4}
+main{max-width:1150px;margin:25px auto;padding:0 15px}
+.channels{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+button{border:0;border-radius:8px;padding:12px 22px;cursor:pointer;font-weight:bold;background:#293951;color:white}
+button.active{background:var(--gold);color:#111}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat{background:var(--card);padding:17px;border-radius:10px}
+.stat strong{display:block;color:var(--gold);font-size:28px;margin-top:7px}
+.category-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
+.category{background:var(--panel);border:1px solid #34445e;border-radius:10px;padding:13px}
+.category b{display:block;color:var(--gold);font-size:12px}
+.category strong{display:block;font-size:26px;margin-top:7px}
+.ad-card{background:#111a29;border:1px solid #34445e;border-radius:10px;padding:17px;margin-bottom:12px}
+.ad-card h3{margin:0 0 12px;color:var(--gold)}
+.meta{color:#d3dbea;line-height:1.9;font-size:14px}
+.empty,.status{background:var(--panel);border-radius:10px;padding:18px;color:var(--muted);text-align:center}
+.status{margin-bottom:16px;text-align:left}
+@media(max-width:760px){.stats{grid-template-columns:1fr}.category-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+<h1 id="pageTitle">PALAAR TV – ADVERTISEMENT PREVIEW</h1>
+<p>விளம்பர விவரங்கள் | Advertisement Information</p>
+</header>
+<main>
+<div class="channels">
+<button id="palaarBtn" class="active" onclick="selectChannel('PALAAR TV')">PALAAR TV</button>
+<button id="nilaBtn" onclick="selectChannel('NILA TV')">NILA TV</button>
+</div>
+<div id="status" class="status">விளம்பர விவரங்கள் ஏற்றப்படுகின்றன...</div>
+<div class="stats">
+<div class="stat">மொத்த விளம்பரங்கள்<strong id="totalCount">0</strong></div>
+<div class="stat">தற்போது Running<strong id="activeCount">0</strong></div>
+<div class="stat">காலாவதியானவை<strong id="expiredCount">0</strong></div>
+</div>
+<div class="category-grid" id="categoryCounts"></div>
+<div id="adList"></div>
+</main>
+<script>
+const firebaseConfig = {
+ apiKey: "AIzaSyDaulig4k-0q0ZCTZbIovL1Mx84iU4oXfo",
+ authDomain: "palaar-tv-advt.firebaseapp.com",
+ projectId: "palaar-tv-advt",
+ storageBucket: "palaar-tv-advt.firebasestorage.app",
+ messagingSenderId: "234087942680",
+ appId: "1:234087942680:web:3782c8b7934fc8a685916d"
+};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.firestore();
+const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
+let allAds=[],selectedChannel="PALAAR TV";
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function parseDate(v){const p=String(v||"").split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function todayDate(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function dateFormat(v){if(!v)return"-";const p=v.split("-");return `${p[2]}-${p[1]}-${p[0]}`}
+function dayDiff(a,b){return Math.round((b-a)/86400000)}
+function getStats(a){const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt);let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";return{remaining:Math.max(0,dayDiff(t,en)),status}}
+function selectChannel(ch){
+ selectedChannel=ch;
+ $("palaarBtn").classList.toggle("active",ch==="PALAAR TV");
+ $("nilaBtn").classList.toggle("active",ch==="NILA TV");
+ $("pageTitle").textContent=ch+" – ADVERTISEMENT PREVIEW";
+ render();
+}
+function render(){
+ const channelAds=allAds.filter(a=>(a.channel||"PALAAR TV")===selectedChannel);
+ const active=channelAds.filter(a=>getStats(a).status==="RUNNING").length;
+ const expired=channelAds.filter(a=>getStats(a).status==="EXPIRED").length;
+ $("totalCount").textContent=channelAds.length;
+ $("activeCount").textContent=active;
+ $("expiredCount").textContent=expired;
+ $("categoryCounts").innerHTML=categories.map(c=>{
+  const n=channelAds.filter(a=>a.category===c&&getStats(a).status==="RUNNING").length;
+  return `<div class="category"><b>${esc(c)}</b><strong>${n}</strong><span>Running Ads</span></div>`;
+ }).join("");
+ const visible=channelAds.slice().sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt));
+ if(!visible.length){$("adList").innerHTML='<div class="empty">இந்த சேனலில் தற்போது விளம்பரங்கள் இல்லை.</div>';return}
+ $("adList").innerHTML=visible.map(a=>{
+  const s=getStats(a);
+  return `<article class="ad-card"><h3>${esc(a.name||"விளம்பரம்")}</h3>
+  <div class="meta"><b>Category:</b> ${esc(a.category)}<br>
+  <b>Start Date:</b> ${dateFormat(a.startAt)}<br>
+  <b>End Date:</b> ${dateFormat(a.endAt)}<br>
+  <b>Remaining Days:</b> ${s.remaining} Days<br>
+  <b>Contact Number:</b> ${esc(a.customerPhone||"-")}<br>
+  <b>Status:</b> ${s.status}</div></article>`;
+ }).join("");
+}
+auth.signInAnonymously().then(()=>{
+ db.collection("advertisements").onSnapshot(snap=>{
+  allAds=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.recordType!=="system");
+  $("status").textContent="விளம்பர விவரங்கள் புதுப்பிக்கப்பட்டுள்ளன.";
+  render();
+ },err=>{$("status").textContent="விளம்பர விவரங்களைப் பெற முடியவில்லை: "+err.message});
+}).catch(err=>{
+ $("status").textContent="Firebase Anonymous Authentication / Firestore Read அனுமதி சரிபார்க்கப்பட வேண்டும்: "+err.message;
+});
+</script>
+</body>
+</html>
