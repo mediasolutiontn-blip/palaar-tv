@@ -71,7 +71,15 @@ function parseDate(v){const p=String(v||"").split("-");return new Date(+p[0],+p[
 function todayDate(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
 function dateFormat(v){if(!v)return"-";const p=v.split("-");return `${p[2]}-${p[1]}-${p[0]}`}
 function dayDiff(a,b){return Math.round((b-a)/86400000)}
-function getStats(a){const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt);let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";return{remaining:Math.max(0,dayDiff(t,en)),status}}
+function getStats(a){
+ const t=todayDate(),st=parseDate(a.startAt),en=parseDate(a.endAt);
+ let status="RUNNING";if(t<st)status="UPCOMING";else if(t>en)status="EXPIRED";
+ return{remaining:Math.max(0,dayDiff(t,en)),status};
+}
+function durationLabel(a){
+ if(a.durationUnit && a.durationValue) return `${a.durationUnit} + ${a.durationValue}`;
+ return "-";
+}
 function selectChannel(ch){
  selectedChannel=ch;
  $("palaarBtn").classList.toggle("active",ch==="PALAAR TV");
@@ -96,6 +104,7 @@ function render(){
   const s=getStats(a);
   return `<article class="ad-card"><h3>${esc(a.name||"விளம்பரம்")}</h3>
   <div class="meta"><b>Category:</b> ${esc(a.category)}<br>
+  <b>Duration:</b> ${esc(durationLabel(a))}<br>
   <b>Start Date:</b> ${dateFormat(a.startAt)}<br>
   <b>End Date:</b> ${dateFormat(a.endAt)}<br>
   <b>Remaining Days:</b> ${s.remaining} Days<br>
