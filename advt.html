@@ -244,20 +244,120 @@ function selectChannel(channel,btn){selectedChannel=channel;$("adminHeading").te
 function channelAds(){return ads.filter(a=>(a.channel||"PALAAR TV")===selectedChannel)}
 function selectCategory(cat,btn){selectedCategory=cat;document.querySelectorAll("#tabs button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");render()}
 function getContacts(){return{admin:$("adminPhone").value.trim(),md:$("mdPhone").value.trim()}}
-function invoiceMessage(a){return`PALAAR TV - ADVERTISEMENT INVOICE\nInvoice Number: ${a.invoiceNumber}\nCustomer Name: ${a.customerName}\nCustomer Contact Number: ${a.customerPhone}\nChannel Name: ${a.channel||"PALAAR TV"}\nAdvertisement Category: ${a.category}\nAdvertisement Name: ${a.name}\nStart Date: ${dateFormat(a.startAt)}\nEnd Date: ${dateFormat(a.endAt)}`}
-function waLink(phone,msg){const n=String(phone||"").replace(/\D/g,"");if(n.length<10){alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");return}window.open("https://wa.me/"+n+"?text="+encodeURIComponent(msg),"_blank")}
-function sendWhatsApp(id,type){const a=ads.find(x=>x.id===id);if(!a)return;const c=getContacts();waLink(type==="customer"?a.customerPhone:type==="md"?c.md:c.admin,invoiceMessage(a))}
-function loadImage(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext("2d").drawImage(img,0,0);resolve(c.toDataURL("image/png"))};img.onerror=reject;img.src=src})}
-async function downloadInvoice(id){
- const a=ads.find(x=>x.id===id);if(!a)return;if(!window.jspdf){alert("PDF Library ஏற்றப்படவில்லை.");return}
+function invoiceMessage(a){return`PALAAR TV - ADVERTISEMENT INVOICE
+Invoice Number: ${a.invoiceNumber}
+Customer Name: ${a.customerName}
+Customer Contact Number: ${a.customerPhone}
+Channel Name: ${a.channel||"PALAAR TV"}
+Advertisement Category: ${a.category}
+Advertisement Name: ${a.name}
+Start Date: ${dateFormat(a.startAt)}
+End Date: ${dateFormat(a.endAt)}`}
+function reminderMessage(a){
+ const s=getStats(a);
+ const days=s.status==="EXPIRED"?0:s.remaining;
+ return`PALAAR TV - ADVERTISEMENT REMINDER
+Dear ${a.customerName},
+Your advertisement reminder:
+Advertisement: ${a.name}
+Channel: ${a.channel||"PALAAR TV"}
+Start Date: ${dateFormat(a.startAt)}
+End Date: ${dateFormat(a.endAt)}
+Advertisement ends in ${days} day${days===1?"":"s"}.
+For details, contact PALAAR TV: 9003604301.`;
+}
+function waLink(phone,msg){
+ const n=String(phone||"").replace(/\D/g,"");
+ if(n.length<10){alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");return}
+ window.open("https://wa.me/"+n+"?text="+encodeURIComponent(msg),"_blank");
+}
+function recipientPhone(type,a){
+ const c=getContacts();
+ return type==="customer"?a.customerPhone:type==="md"?c.md:c.admin;
+}
+function sendWhatsApp(id,type){
+ const a=ads.find(x=>x.id===id);if(!a)return;
+ waLink(recipientPhone(type,a),invoiceMessage(a));
+}
+function sendReminderWhatsApp(id,type){
+ const a=ads.find(x=>x.id===id);if(!a)return;
+ waLink(recipientPhone(type,a),reminderMessage(a));
+}
+function loadImage(src){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();
+  img.onload=()=>{const c=document.createElement("canvas");c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext("2d").drawImage(img,0,0);resolve(c.toDataURL("image/png"))};
+  img.onerror=reject;img.src=src;
+ });
+}
+async function addPdfBranding(pdf){
+ const pageHeight=pdf.internal.pageSize.getHeight();
+ const y=pageHeight-27;
+ pdf.setDrawColor(200,160,50);pdf.line(14,y-7,196,y-7);
+ pdf.setFontSize(9);pdf.setTextColor(30,30,30);pdf.setFont(undefined,"bold");
+ pdf.text("PALAAR TV",14,y);
+ pdf.setFont(undefined,"normal");
+ pdf.text("No.44, Gandhi Nagar, Vaalakarai Amman Kovil ( Opp ),",14,y+6);
+ pdf.text("Ranipet - 632 401.",14,y+11);
+ pdf.text("Cell : 900 360 430 1.",14,y+16);
+}
+async function makeInvoicePdf(a){
+ if(!window.jspdf)throw new Error("PDF Library ஏற்றப்படவில்லை.");
  const{jsPDF}=window.jspdf,pdf=new jsPDF();
  pdf.setFillColor(17,24,39);pdf.rect(0,0,210,38,"F");
  try{const logo=await loadImage("palaartv-logo.png");pdf.addImage(logo,"PNG",12,6,30,25)}catch(e){}
- pdf.setTextColor(255,201,64);pdf.setFontSize(22);pdf.text("PALAAR TV",50,18);pdf.setTextColor(255,255,255);pdf.setFontSize(10);pdf.text("ADVERTISEMENT INVOICE",50,27);
- pdf.setTextColor(20,20,20);pdf.setFontSize(15);pdf.text("ADVERTISEMENT INVOICE",14,54);pdf.setFontSize(10);pdf.text("Invoice Number: "+a.invoiceNumber,14,68);pdf.line(14,76,196,76);
+ pdf.setTextColor(255,201,64);pdf.setFontSize(22);pdf.text("PALAAR TV",50,18);
+ pdf.setTextColor(255,255,255);pdf.setFontSize(10);pdf.text("ADVERTISEMENT INVOICE",50,27);
+ pdf.setTextColor(20,20,20);pdf.setFontSize(15);pdf.text("ADVERTISEMENT INVOICE",14,54);
+ pdf.setFontSize(10);pdf.text("Invoice Number: "+a.invoiceNumber,14,68);pdf.line(14,76,196,76);
  const rows=[["Customer Name",a.customerName],["Customer Contact Number",a.customerPhone],["Channel Name",a.channel||"PALAAR TV"],["Advertisement Category",a.category],["Advertisement Name",a.name],["Start Date",dateFormat(a.startAt)],["End Date",dateFormat(a.endAt)]];
- let y=92;for(const r of rows){pdf.setFont(undefined,"bold");pdf.text(r[0]+":",15,y);pdf.setFont(undefined,"normal");pdf.text(pdf.splitTextToSize(String(r[1]||"-"),105),85,y);y+=12}
- pdf.save(a.invoiceNumber+".pdf")
+ let y=92;
+ for(const r of rows){pdf.setFont(undefined,"bold");pdf.text(r[0]+":",15,y);pdf.setFont(undefined,"normal");pdf.text(pdf.splitTextToSize(String(r[1]||"-"),105),85,y);y+=12}
+ await addPdfBranding(pdf);
+ return pdf;
+}
+async function makeReminderPdf(a){
+ if(!window.jspdf)throw new Error("PDF Library ஏற்றப்படவில்லை.");
+ const{jsPDF}=window.jspdf,pdf=new jsPDF();
+ pdf.setFillColor(17,24,39);pdf.rect(0,0,210,38,"F");
+ try{const logo=await loadImage("palaartv-logo.png");pdf.addImage(logo,"PNG",12,6,30,25)}catch(e){}
+ pdf.setTextColor(255,201,64);pdf.setFontSize(22);pdf.text("PALAAR TV",50,18);
+ pdf.setTextColor(255,255,255);pdf.setFontSize(10);pdf.text("ADVERTISEMENT REMINDER",50,27);
+ pdf.setTextColor(20,20,20);pdf.setFontSize(15);pdf.text("ADVERTISEMENT REMINDER",14,54);
+ pdf.setFontSize(10);pdf.text("Reference Number: "+a.invoiceNumber,14,68);pdf.line(14,76,196,76);
+ const rows=[["Customer Name",a.customerName],["Customer Contact Number",a.customerPhone],["Channel Name",a.channel||"PALAAR TV"],["Advertisement Category",a.category],["Advertisement Name",a.name],["Start Date",dateFormat(a.startAt)],["End Date",dateFormat(a.endAt)]];
+ let y=92;
+ for(const r of rows){pdf.setFont(undefined,"bold");pdf.text(r[0]+":",15,y);pdf.setFont(undefined,"normal");pdf.text(pdf.splitTextToSize(String(r[1]||"-"),105),85,y);y+=12}
+ await addPdfBranding(pdf);
+ return pdf;
+}
+async function downloadInvoice(id){
+ const a=ads.find(x=>x.id===id);if(!a)return;
+ try{const pdf=await makeInvoicePdf(a);pdf.save(a.invoiceNumber+".pdf")}
+ catch(e){alert("Invoice PDF உருவாக்க முடியவில்லை: "+e.message)}
+}
+async function downloadReminder(id){
+ const a=ads.find(x=>x.id===id);if(!a)return;
+ try{const pdf=await makeReminderPdf(a);pdf.save("REMINDER-"+a.invoiceNumber+".pdf")}
+ catch(e){alert("Reminder PDF உருவாக்க முடியவில்லை: "+e.message)}
+}
+async function sendPdfWhatsApp(id,type,kind){
+ const a=ads.find(x=>x.id===id);if(!a)return;
+ const phone=recipientPhone(type,a);
+ const msg=kind==="reminder"?reminderMessage(a):invoiceMessage(a);
+ // WhatsApp's wa.me link cannot attach a local PDF automatically.
+ // Download the PDF first, then open the selected WhatsApp chat with its message.
+ const waWindow=window.open("about:blank","_blank");
+ try{
+  const pdf=kind==="reminder"?await makeReminderPdf(a):await makeInvoicePdf(a);
+  const filename=(kind==="reminder"?"REMINDER-":"")+a.invoiceNumber+".pdf";
+  pdf.save(filename);
+  const n=String(phone||"").replace(/\D/g,"");
+  if(n.length<10){if(waWindow)waWindow.close();alert("சரியான WhatsApp எண்ணை உள்ளிடவும்.");return}
+  const url="https://wa.me/"+n+"?text="+encodeURIComponent(msg);
+  if(waWindow)waWindow.location.href=url;else window.open(url,"_blank");
+  alert("PDF Download செய்யப்பட்டுள்ளது. WhatsApp திறந்ததும் அந்த PDF-ஐ Attach செய்து Send செய்யவும்.");
+ }catch(e){if(waWindow)waWindow.close();alert("PDF உருவாக்க முடியவில்லை: "+e.message)}
 }
 function render(){
  const current=channelAds(),active=current.filter(a=>getStats(a).status==="RUNNING").length,expired=current.filter(a=>getStats(a).status==="EXPIRED").length;
@@ -270,7 +370,19 @@ function render(){
  const s=getStats(a),cls=s.status==="RUNNING"?"running":s.status==="EXPIRED"?"expired":"upcoming";
  return`<article class="ad-card"><div class="ad-top"><h3>${esc(a.name)}</h3><span class="badge ${cls}">${s.status}</span></div>
  <div class="ad-meta"><b>Channel:</b> ${esc(a.channel||"PALAAR TV")}<br><b>Category:</b> ${esc(a.category)}<br><b>Customer:</b> ${esc(a.customerName)}<br><b>Mobile:</b> ${esc(a.customerPhone)}<br><b>Start Date:</b> ${dateFormat(a.startAt)}<br><b>Duration:</b> ${Number(a.durationValue||s.total)} ${esc(a.durationUnit||"Day")}<br><b>End Date:</b> ${dateFormat(a.endAt)}<br><b>Remaining Days:</b> <strong style="color:${s.remaining>0?'#20c879':'#ff7777'}">${s.remaining} Days</strong><br><b>Invoice:</b> ${esc(a.invoiceNumber)}${a.details?'<br><b>Details:</b> '+esc(a.details):''}</div>
- <div class="ad-actions"><button class="pdf" onclick="downloadInvoice('${a.id}')">PDF Invoice</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','customer')">Customer WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','md')">MD WhatsApp</button><button class="whatsapp" onclick="sendWhatsApp('${a.id}','admin')">Admin WhatsApp</button><button onclick="editAd('${a.id}')">Edit</button><button class="danger" onclick="deleteAd('${a.id}')">Delete</button></div></article>`
+ <div class="ad-actions">
+  <button class="pdf" onclick="downloadInvoice('${a.id}')">Download INVOICE PDF</button>
+  <button class="pdf" onclick="downloadReminder('${a.id}')">Download REMINDER PDF</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','customer','invoice')">Invoice → Customer</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','md','invoice')">Invoice → MD</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','admin','invoice')">Invoice → Admin</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','customer','reminder')">Reminder → Customer</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','md','reminder')">Reminder → MD</button>
+  <button class="whatsapp" onclick="sendPdfWhatsApp('${a.id}','admin','reminder')">Reminder → Admin</button>
+  <button class="whatsapp" onclick="sendWhatsApp('${a.id}','customer')">Invoice Text → Customer</button>
+  <button class="whatsapp" onclick="sendReminderWhatsApp('${a.id}','customer')">Reminder Text → Customer</button>
+  <button onclick="editAd('${a.id}')">Edit</button><button class="danger" onclick="deleteAd('${a.id}')">Delete</button>
+</div></article>`
  }).join("")
 }
 startDashboard();
