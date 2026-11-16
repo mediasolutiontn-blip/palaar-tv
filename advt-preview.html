@@ -23,9 +23,11 @@ button.active{background:var(--gold);color:#111}
 .stat{background:var(--card);padding:17px;border-radius:10px}
 .stat strong{display:block;color:var(--gold);font-size:28px;margin-top:7px}
 .category-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:18px 0}
-.category{background:var(--panel);border:1px solid #34445e;border-radius:10px;padding:13px}
-.category b{display:block;color:var(--gold);font-size:12px}
-.category strong{display:block;font-size:26px;margin-top:7px}
+button.category{display:block;width:100%;text-align:left;background:var(--panel);border:1px solid #34445e;border-radius:10px;padding:13px;color:var(--text)}
+button.category b{display:block;color:var(--gold);font-size:12px}
+button.category strong{display:block;font-size:26px;margin-top:7px;color:var(--text)}
+button.category.active{background:#3a321d;border:2px solid var(--gold);color:var(--text)}
+button.category:hover{border-color:var(--gold);opacity:1}
 .ad-card{background:#111a29;border:1px solid #34445e;border-radius:10px;padding:17px;margin-bottom:12px}
 .ad-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .ad-card h3{margin:0;color:var(--gold)}
@@ -70,7 +72,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth=firebase.auth(), db=firebase.firestore();
 const categories=["VISUAL AD","SCROLLING AD","FLASH NEWS AD","S-LOGO AD","SPECIAL PROGRAM AD"];
-let allAds=[],selectedChannel="PALAAR TV";
+let allAds=[],selectedChannel="PALAAR TV",selectedCategory="ALL";
 const $=id=>document.getElementById(id);
 
 function esc(v){
@@ -105,9 +107,14 @@ function durationLabel(a){
 }
 function selectChannel(ch){
  selectedChannel=ch;
+ selectedCategory="ALL";
  $("palaarBtn").classList.toggle("active",ch==="PALAAR TV");
  $("nilaBtn").classList.toggle("active",ch==="NILA TV");
  $("pageTitle").textContent=ch+" – ADVERTISEMENT PREVIEW";
+ render();
+}
+function selectCategory(cat){
+ selectedCategory=selectedCategory===cat?"ALL":cat;
  render();
 }
 function render(){
@@ -120,10 +127,10 @@ function render(){
 
  $("categoryCounts").innerHTML=categories.map(c=>{
   const n=channelAds.filter(a=>a.category===c&&getStats(a).status==="RUNNING").length;
-  return `<div class="category"><b>${esc(c)}</b><strong>${n}</strong><span>Running Ads</span></div>`;
+  return `<button type="button" class="category ${selectedCategory===c?"active":""}" data-category="${esc(c)}"><b>${esc(c)}</b><strong>${n}</strong><span>Running Ads</span></button>`;
  }).join("");
 
- const visible=channelAds.slice().sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt));
+ const visible=channelAds.filter(a=>selectedCategory==="ALL"||a.category===selectedCategory).slice().sort((a,b)=>parseDate(a.startAt)-parseDate(b.startAt));
  if(!visible.length){
   $("adList").innerHTML='<div class="empty">இந்த சேனலில் தற்போது விளம்பரங்கள் இல்லை.</div>';
   return;
@@ -146,6 +153,7 @@ function render(){
   </article>`;
  }).join("");
 }
+$("categoryCounts").addEventListener("click",e=>{const b=e.target.closest("button[data-category]");if(b)selectCategory(b.dataset.category);});
 auth.signInAnonymously().then(()=>{
  db.collection("advertisements").onSnapshot(snap=>{
   allAds=snap.docs.map(d=>({id:d.id,...d.data()})).filter(a=>a.recordType!=="system");
